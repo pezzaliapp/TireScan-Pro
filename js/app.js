@@ -391,6 +391,19 @@ function handleImport(e) {
   e.target.value='';
 }
 
+/* ── Theme ── */
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('handyscan_theme', t);
+  const btn = $('theme-toggle');
+  if (btn) btn.textContent = t === 'light' ? '🌙' : '☀️';
+}
+function toggleTheme() {
+  const cur = localStorage.getItem('handyscan_theme') || 'dark';
+  applyTheme(cur === 'dark' ? 'light' : 'dark');
+}
+window.toggleTheme = toggleTheme;
+
 /* ── PWA Install ── */
 window.addEventListener('beforeinstallprompt', e=>{
   e.preventDefault(); deferredInstall=e;
@@ -412,6 +425,10 @@ if ('serviceWorker' in navigator) {
 
 /* ── Init ── */
 window.addEventListener('DOMContentLoaded', ()=>{
+  // Applica tema salvato
+  const savedTheme = localStorage.getItem('handyscan_theme') || 'dark';
+  applyTheme(savedTheme);
+
   HS.loadData();
   RC.init();
   showView('dashboard');
@@ -420,4 +437,9 @@ window.addEventListener('DOMContentLoaded', ()=>{
   $('filter-dep')?.addEventListener('change', renderList);
   $('filter-stato')?.addEventListener('change', renderList);
   $('import-file')?.addEventListener('change', handleImport);
+
+  // Mostra welcome screen solo al primo avvio
+  if (HS.isFirstLaunch()) {
+    setTimeout(() => HS.showWelcomeScreen(), 300);
+  }
 });
