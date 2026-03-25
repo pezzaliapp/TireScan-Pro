@@ -1,11 +1,31 @@
 # 🔍 HandyScan – Tire Monitor PWA
 
-> App open source per la gestione delle scansioni pneumatici **Handy Scan by Cormach Srl**  
-> Progressive Web App – funziona su PC, iPhone, Android, Tablet
+> App open source per la gestione delle scansioni pneumatici **Handy Scan by Cormach Srl**
+> Progressive Web App — PC, iPhone, Android, Tablet in officina
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![PWA Ready](https://img.shields.io/badge/PWA-Ready-green.svg)]()
-[![No Dependencies](https://img.shields.io/badge/deps-zero-brightgreen.svg)]()
+[![PWA](https://img.shields.io/badge/PWA-Ready-00d4ff.svg)]()
+[![No Deps](https://img.shields.io/badge/dependencies-zero-brightgreen.svg)]()
+
+---
+
+## 📁 Struttura file
+
+```
+handyscan-pwa/
+├── index.html          ← App shell — tutto il layout HTML
+├── sw.js               ← Service Worker (offline)
+├── manifest.json       ← PWA manifest (installazione)
+├── css/
+│   └── style.css       ← Design system completo
+├── js/
+│   ├── data.js         ← Storage, import/export CSV, dati campione
+│   ├── recall.js       ← Modulo richiami clienti via email
+│   └── app.js          ← Logica principale (viste, grafici, form)
+├── icons/
+│   └── icon-192.svg    ← Icona app
+└── README.md
+```
 
 ---
 
@@ -13,123 +33,104 @@
 
 | Feature | Descrizione |
 |---------|-------------|
-| 📋 **Archivio completo** | Lista veicoli con ricerca, filtri e ordinamento |
-| 🔍 **Dettaglio veicolo** | Schema visivo auto, barre spessore, stato semaforo |
-| 🔔 **Allarmi automatici** | Notifica veicoli critici (≤1.6mm) e in attenzione (≤3.0mm) |
-| 📊 **Statistiche** | Grafici distribuzione stato, trend, deposito, operatori |
-| ⬆ **Import CSV** | Importa file esportati dal portale `portal.cormachsrl.com` |
-| ⬇ **Export CSV** | Esporta tutti i dati in CSV compatibile con Excel |
-| 🖨 **Stampa PDF** | Scheda cliente stampabile (o salva come PDF) |
-| 📲 **Installabile** | Installabile su qualsiasi dispositivo come app nativa |
-| 🌐 **Offline** | Funziona senza connessione dopo il primo caricamento |
+| 🏠 **Dashboard** | Statistiche live: totale, OK, attenzione, critici, deposito |
+| 📋 **Archivio** | Lista veicoli con ricerca, filtri, ordinamento colonne |
+| 🔍 **Dettaglio** | Schema visivo auto con 4 ruote, barre spessore, stato semaforo |
+| 🔔 **Allarmi** | Veicoli critici (≤1.6mm) e attenzione (≤3.0mm) separati |
+| 📬 **Richiami** | Email clienti: critico, periodico, stagionale, anniversario |
+| 📧 **Gestione email** | Import/export CSV email+telefono per ogni cliente |
+| 📊 **Statistiche** | 4 grafici: stato, deposito, trend mm, operatori |
+| ⬆ **Import CSV** | Riconosce formato portale Cormach e formato nativo |
+| ⬇ **Export CSV** | Esporta tutti i dati in CSV compatibile Excel |
+| 🖨 **Stampa** | Scheda cliente ottimizzata per stampa/PDF |
+| 📲 **Installabile** | PWA: si installa su iOS, Android, PC come app nativa |
+| 🌐 **Offline** | Funziona senza rete dopo il primo caricamento |
 
 ---
 
-## 🚀 Setup in 5 minuti
+## 🚀 Metti online in 3 passi
 
-### Opzione 1 – GitHub Pages (gratis, zero server)
+### GitHub Pages (gratis, consigliato)
 
 ```bash
-# 1. Fork/clone questa repo
-git clone https://github.com/TUO-UTENTE/handyscan-app.git
-cd handyscan-app
-
-# 2. Vai su GitHub → Settings → Pages → Branch: main → / (root)
-# 3. L'app sarà disponibile su:
-#    https://TUO-UTENTE.github.io/handyscan-app/
+# 1. Fork questa repo su GitHub
+# 2. Settings → Pages → Branch: main → / (root) → Save
+# 3. Online su: https://TUO-UTENTE.github.io/handyscan-pwa/
 ```
 
-### Opzione 2 – Locale (qualsiasi browser)
+### Locale (test rapido)
 
 ```bash
-# Basta aprire index.html con un server locale
 npx serve .
 # oppure
 python3 -m http.server 8080
-# Apri http://localhost:8080
+# poi apri http://localhost:8080
 ```
 
-### Opzione 3 – Deploy su Netlify/Vercel
+### Netlify Drop
 
-Trascina la cartella del progetto su [netlify.com/drop](https://netlify.com/drop) — online in 30 secondi.
+Trascina la cartella su [netlify.com/drop](https://app.netlify.com/drop) — online in 30 secondi.
 
 ---
 
 ## 📲 Installazione su dispositivo
 
-### iPhone / iPad (Safari)
-1. Apri l'URL dell'app in Safari
-2. Tocca **Condividi** → **Aggiungi a schermata Home**
-3. L'app appare come un'icona nativa
-
-### Android (Chrome)
-1. Apri l'URL in Chrome
-2. Tocca il banner **"Installa HandyScan"** oppure menu → **Aggiungi a schermata Home**
-
-### PC / Mac (Chrome, Edge)
-1. Apri l'URL
-2. Clicca l'icona di installazione nella barra degli indirizzi (➕)
+| Dispositivo | Istruzioni |
+|-------------|------------|
+| **iPhone / iPad** | Safari → Condividi → Aggiungi a schermata Home |
+| **Android** | Chrome → menu ⋮ → Aggiungi a schermata Home |
+| **PC / Mac** | Chrome/Edge → icona ➕ nella barra indirizzi |
 
 ---
 
-## 📥 Come importare i dati da Handy Scan
+## 📥 Import dati da Handy Scan (portale Cormach)
 
-1. Vai su [portal.cormachsrl.com/tireapp/tires-store](http://portal.cormachsrl.com/tireapp/tires-store)
-2. Applica i filtri desiderati
-3. Clicca **Scarica** (icona download)
-4. Salva il file `.xls` e aprilo in Excel/LibreOffice
-5. **Salva come CSV** (File → Salva con nome → CSV UTF-8)
-6. In HandyScan → **⬆ Importa** → seleziona il file CSV
-7. I record vengono aggiornati automaticamente (merge per targa)
+1. Vai su `portal.cormachsrl.com/tireapp/tires-store`
+2. Applica filtri e clicca **Scarica**
+3. Apri il `.xls` in Excel → **Salva come CSV UTF-8**
+4. In HandyScan → **⬆ Importa** → seleziona il CSV
+5. I record vengono uniti automaticamente (merge per targa)
 
-> 💡 L'import riconosce automaticamente sia il formato del portale Cormach che il formato di esportazione nativo dell'app.
+> L'app riconosce automaticamente il formato del portale Cormach.
 
 ---
 
-## 🗂 Struttura del Progetto
+## 📬 Modulo Richiami — Come funziona
 
+Il modulo calcola automaticamente chi richiamare basandosi su 4 criteri:
+
+| Tipo | Quando | Priorità |
+|------|--------|----------|
+| 🔴 Critico | Spessore < soglia configurata (default 3.0mm) | Urgente |
+| 🔁 Periodico | Ultima scan > X mesi fa (default 6 mesi) | Alta/Normale |
+| 🍂 Stagionale | Marzo/Aprile o Ottobre/Novembre | Normale |
+| 🎂 Anniversario | N anni dalla prima scansione (finestra 30gg) | Bassa |
+
+**Workflow:**
+1. Vai su **📬 Richiami** — vedi chi contattare oggi
+2. **📧 Apri in Mail** — si apre Outlook/Gmail con testo già pronto
+3. **✅ Segna inviato** — sparisce dalla lista per quel mese
+
+**Import email da CSV:**
 ```
-handyscan-app/
-├── index.html       # App shell e layout HTML
-├── style.css        # Design system completo
-├── app.js           # Logica applicativa (Vanilla JS)
-├── sw.js            # Service Worker per offline
-├── manifest.json    # PWA manifest
-├── icons/
-│   ├── icon-192.png
-│   └── icon-512.png
-└── README.md
+Targa,Email,Telefono,Note
+DW902KP,mario@email.it,+39 333 1234567,Cliente VIP
+EH126GN,luca@gmail.com,,
 ```
 
 ---
 
-## 🎨 Soglie di usura
+## 🎨 Soglie usura
 
-| Colore | Soglia | Stato |
-|--------|--------|-------|
 | 🟢 Verde | > 3.0 mm | OK |
-| 🟡 Arancione | 1.6 – 3.0 mm | Attenzione – pianificare sostituzione |
+| 🟡 Arancione | 1.6 – 3.0 mm | Attenzione |
 | 🔴 Rosso | ≤ 1.6 mm | **Critico – limite legale** |
 
----
-
-## 🔧 Personalizzazione
-
-Le soglie sono configurabili in `app.js`:
-```js
-const WARN_THRESHOLD = 3.0;   // mm – soglia attenzione
-const CRIT_THRESHOLD = 1.6;   // mm – limite legale
-```
+Soglie configurabili in `js/data.js` (costanti `WARN_MM` e `CRIT_MM`).
 
 ---
 
 ## 📄 Licenza
 
-MIT – Libero uso, modifica e distribuzione.  
-Creato con ❤️ per i clienti **Handy Scan – Cormach Srl**
-
----
-
-## 🤝 Contribuire
-
-Pull request benvenute! Apri una issue per segnalare bug o proporre nuove funzioni.
+MIT — Libero uso, modifica e distribuzione.
+Creato per i clienti **Handy Scan – Cormach Srl**, Correggio (RE)
