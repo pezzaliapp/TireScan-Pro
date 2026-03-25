@@ -1,0 +1,17 @@
+{
+  "name": "HandyScan – Tire Monitor",
+  "short_name": "HandyScan",
+  "description": "App per la gestione delle scansioni pneumatici Handy Scan – Cormach Srl",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a0f1e",
+  "theme_color": "#0ea5e9",
+  "lang": "it",
+  "icons": [
+    { "src": "icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "icons/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "categories": ["utilities", "productivity"],
+  "screenshots": []
+}

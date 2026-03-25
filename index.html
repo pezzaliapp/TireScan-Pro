@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="HandyScan – Gestione scansioni pneumatici Handy Scan by Cormach Srl">
+  <meta name="theme-color" content="#0ea5e9">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="HandyScan">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./icons/icon-192.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.svg">
+  <title>HandyScan – Tire Monitor</title>
+  <link rel="stylesheet" href="./style.css">
+  <!-- Chart.js CDN – works offline after first load via SW cache -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+  <script src="./app.js" defer></script>
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══════════════ HEADER ═══════════════ -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="header-logo">🔍</div>
+      <div>
+        <div class="header-title">Handy<span>Scan</span></div>
+        <span class="header-sub">Cormach Srl – Tire Monitor</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Esporta</button>
+      <label class="btn btn-ghost btn-sm" style="cursor:pointer">
+        ⬆ Importa <input id="import-file" type="file" accept=".csv,.xls,.xlsx" style="display:none">
+      </label>
+      <button class="btn btn-primary btn-sm" onclick="openAdd()">＋ Nuova</button>
+    </div>
+  </header>
+
+  <!-- ═══════════════ INSTALL BANNER ═══════════════ -->
+  <div id="install-banner">
+    <div>
+      <strong>📲 Installa HandyScan</strong>
+      <span style="font-size:12px;color:var(--muted);margin-left:8px">Usa l'app offline su questo dispositivo</span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary btn-sm" onclick="installPWA()">Installa</button>
+      <button class="btn btn-ghost btn-sm" onclick="this.closest('#install-banner').classList.remove('visible')">✕</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ NAV ═══════════════ -->
+  <nav class="app-nav">
+    <button id="nav-dashboard" class="nav-btn" onclick="showView('dashboard')">🏠 Dashboard</button>
+    <button id="nav-list"      class="nav-btn" onclick="showView('list')">📋 Archivio</button>
+    <button id="nav-alerts"    class="nav-btn" onclick="showView('alerts')">
+      🔔 Allarmi <span id="alert-badge" class="nav-badge" style="display:none">0</span>
+    </button>
+    <button id="nav-stats"     class="nav-btn" onclick="showView('stats')">📊 Statistiche</button>
+  </nav>
+
+  <!-- ═══════════════ MAIN ═══════════════ -->
+  <main class="app-main">
+
+    <!-- ── DASHBOARD ── -->
+    <div id="view-dashboard" class="view">
+      <div class="stats-grid">
+        <div class="stat-card stat-accent">
+          <div class="stat-icon">🚗</div>
+          <div><div class="stat-val" id="stat-total">0</div><div class="stat-label">Veicoli totali</div></div>
+        </div>
+        <div class="stat-card stat-ok">
+          <div class="stat-icon">✅</div>
+          <div><div class="stat-val" id="stat-ok">0</div><div class="stat-label">Stato OK</div></div>
+        </div>
+        <div class="stat-card stat-warn">
+          <div class="stat-icon">⚠️</div>
+          <div><div class="stat-val" id="stat-warn">0</div><div class="stat-label">Attenzione</div></div>
+        </div>
+        <div class="stat-card stat-crit">
+          <div class="stat-icon">🔴</div>
+          <div><div class="stat-val" id="stat-crit">0</div><div class="stat-label">Critici</div></div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+        <h2 style="font-size:15px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Scansioni recenti</h2>
+        <button class="btn btn-ghost btn-sm" onclick="showView('list')">Vedi tutte →</button>
+      </div>
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table>
+            <thead><tr>
+              <th>Targa</th><th>Cliente</th><th>Data</th><th>Stato</th><th>Min mm</th>
+            </tr></thead>
+            <tbody id="recent-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--muted)">
+        🟢 OK ≥ 3.0 mm &nbsp;|&nbsp; 🟡 Attenzione 1.6–3.0 mm &nbsp;|&nbsp; 🔴 Critico ≤ 1.6 mm (limite legale)
+        <span id="stat-deposito" style="display:none"></span>
+      </div>
+    </div>
+
+    <!-- ── LIST ── -->
+    <div id="view-list" class="view">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="ico">🔍</span>
+          <input id="search-input" class="search-input" type="search" placeholder="Cerca targa o cliente…" autocomplete="off">
+        </div>
+        <select id="filter-deposito" class="filter-select">
+          <option value="all">Tutti</option>
+          <option value="si">In deposito</option>
+          <option value="no">Non in deposito</option>
+        </select>
+        <select id="filter-status" class="filter-select">
+          <option value="all">Tutti gli stati</option>
+          <option value="ok">✅ OK</option>
+          <option value="warn">⚠ Attenzione</option>
+          <option value="crit">🔴 Critico</option>
+        </select>
+        <span id="result-count" class="result-count"></span>
+        <button class="btn btn-primary btn-sm" onclick="openAdd()">＋ Nuova scansione</button>
+      </div>
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table>
+            <thead><tr>
+              <th onclick="setSort('targa')" style="cursor:pointer">Targa ↕</th>
+              <th onclick="setSort('data')"  style="cursor:pointer">Data ↕</th>
+              <th onclick="setSort('cliente')" style="cursor:pointer">Cliente ↕</th>
+              <th>Ant SX</th><th>Ant DX</th><th>Post SX</th><th>Post DX</th>
+              <th onclick="setSort('min')" style="cursor:pointer">Min ↕</th>
+              <th>Dep.</th><th></th>
+            </tr></thead>
+            <tbody id="list-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DETAIL ── -->
+    <div id="view-detail" class="view"></div>
+
+    <!-- ── ALERTS ── -->
+    <div id="view-alerts" class="view">
+      <h2 style="font-size:18px;font-weight:800;margin-bottom:20px">🔔 Allarmi Pneumatici</h2>
+      <div id="alerts-container"></div>
+    </div>
+
+    <!-- ── STATS ── -->
+    <div id="view-stats" class="view">
+      <h2 style="font-size:18px;font-weight:800;margin-bottom:20px">📊 Statistiche</h2>
+      <div class="charts-grid">
+        <div class="card">
+          <div class="card-title">⚡ Distribuzione Stato</div>
+          <div class="chart-canvas-wrap"><canvas id="chart-stato"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">🏪 Deposito</div>
+          <div class="chart-canvas-wrap"><canvas id="chart-deposito"></canvas></div>
+        </div>
+        <div class="card" style="grid-column:1/-1">
+          <div class="card-title">📏 Spessore minimo per veicolo</div>
+          <div class="chart-canvas-wrap" style="height:260px"><canvas id="chart-trend"></canvas></div>
+        </div>
+        <div class="card" style="grid-column:1/-1">
+          <div class="card-title">👤 Scansioni per operatore</div>
+          <div class="chart-canvas-wrap" style="height:200px"><canvas id="chart-op"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── FORM ── -->
+    <div id="view-form" class="view">
+      <button class="btn btn-ghost btn-sm" style="margin-bottom:20px" onclick="showView('list')">← Annulla</button>
+      <div class="card" style="max-width:700px">
+        <h2 id="form-title" style="font-size:20px;font-weight:800;margin-bottom:20px">Nuova Scansione</h2>
+        <form id="scan-form" onsubmit="event.preventDefault(); saveForm()">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Targa *</label>
+              <input id="f-targa" class="form-input" type="text" placeholder="es. AB123CD" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Data</label>
+              <input id="f-data" class="form-input" type="text" placeholder="GG/MM/AAAA">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cliente</label>
+              <input id="f-cliente" class="form-input" type="text">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Operatore</label>
+              <input id="f-operatore" class="form-input" type="text">
+            </div>
+          </div>
+
+          <div class="form-section">📏 Misurazioni Pneumatici (mm)</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Anteriore Sinistro – Tipo</label>
+              <input id="f-ant_sx_tipo" class="form-input" type="text" placeholder="es. 205/55R16 o /R">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Anteriore Sinistro – mm</label>
+              <input id="f-ant_sx_mm" class="form-input" type="number" min="0" max="12" step="0.1" placeholder="0.0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Anteriore Destro – Tipo</label>
+              <input id="f-ant_dx_tipo" class="form-input" type="text" placeholder="es. 205/55R16 o /R">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Anteriore Destro – mm</label>
+              <input id="f-ant_dx_mm" class="form-input" type="number" min="0" max="12" step="0.1" placeholder="0.0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Posteriore Sinistro – Tipo</label>
+              <input id="f-post_sx_tipo" class="form-input" type="text" placeholder="es. 205/55R16 o /R">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Posteriore Sinistro – mm</label>
+              <input id="f-post_sx_mm" class="form-input" type="number" min="0" max="12" step="0.1" placeholder="0.0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Posteriore Destro – Tipo</label>
+              <input id="f-post_dx_tipo" class="form-input" type="text" placeholder="es. 205/55R16 o /R">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Posteriore Destro – mm</label>
+              <input id="f-post_dx_mm" class="form-input" type="number" min="0" max="12" step="0.1" placeholder="0.0">
+            </div>
+          </div>
+
+          <div class="form-section">🏪 Deposito</div>
+          <div class="form-grid">
+            <div class="form-group" style="flex-direction:row;align-items:center;gap:10px">
+              <input id="f-deposito" type="checkbox" style="width:20px;height:20px;cursor:pointer;accent-color:var(--accent)">
+              <label class="form-label" for="f-deposito" style="cursor:pointer;text-transform:none;font-size:14px">Pneumatici in deposito</label>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Posizione magazzino</label>
+              <input id="f-posizione" class="form-input" type="text" placeholder="es. Block 1, Scaffale C3">
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" onclick="showView('list')">Annulla</button>
+            <button type="submit" class="btn btn-primary">💾 Salva scansione</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </main><!-- /app-main -->
+</div><!-- /app -->
+
+<!-- Toast -->
+<div id="toast"></div>
+
+</body>
+</html>
