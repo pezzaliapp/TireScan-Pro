@@ -69,87 +69,50 @@ function showWelcomeScreen() {
     padding:24px;overflow-y:auto;
   `;
   overlay.innerHTML = `
-    <div style="max-width:520px;width:100%;text-align:center">
-
-      <div style="width:72px;height:72px;background:linear-gradient(135deg,var(--cyan),var(--blue));
-        border-radius:20px;display:flex;align-items:center;justify-content:center;
-        font-size:34px;margin:0 auto 24px;box-shadow:0 0 32px var(--cyan-glow)">🔍</div>
-
-      <h1 style="font-family:var(--font-h);font-size:32px;font-weight:800;letter-spacing:.5px;margin-bottom:6px">
-        Handy<span style="color:var(--cyan)">Scan</span>
-      </h1>
-      <p style="font-size:14px;color:var(--muted);margin-bottom:32px">
-        Gestione scansioni pneumatici · Cormach Srl
-      </p>
-
-      <!-- Step cards -->
-      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;text-align:left">
-
-        <div style="background:var(--bg3);border:1px solid var(--bdr);border-left:3px solid var(--cyan);
-          border-radius:var(--r);padding:14px 16px;display:flex;gap:14px;align-items:flex-start">
-          <span style="font-size:22px;flex-shrink:0">1️⃣</span>
+    <div class="welcome-box">
+      <div class="welcome-logo">🔍</div>
+      <div class="welcome-title">Handy<span style="color:var(--cyan)">Scan</span></div>
+      <div class="welcome-sub">Gestione scansioni pneumatici · Cormach Srl</div>
+      <div class="welcome-steps">
+        <div class="welcome-step hl">
+          <span class="welcome-step-ico">1️⃣</span>
           <div>
-            <div style="font-weight:700;font-size:14px;margin-bottom:3px">Esporta dal portale Cormach</div>
-            <div style="font-size:12px;color:var(--muted)">
-              Vai su <strong style="color:var(--cyan)">portal.cormachsrl.com/tireapp/tires-store</strong>,
-              applica i filtri e clicca <strong>Scarica</strong> per ottenere il file Excel.
-            </div>
+            <div class="welcome-step-title">Esporta dal portale Cormach</div>
+            <div class="welcome-step-text">Vai su <strong>portal.cormachsrl.com/tireapp/tires-store</strong>, applica i filtri e clicca <strong>Scarica</strong> per ottenere il file Excel.</div>
           </div>
         </div>
-
-        <div style="background:var(--bg3);border:1px solid var(--bdr);border-left:3px solid var(--cyan);
-          border-radius:var(--r);padding:14px 16px;display:flex;gap:14px;align-items:flex-start">
-          <span style="font-size:22px;flex-shrink:0">2️⃣</span>
+        <div class="welcome-step hl">
+          <span class="welcome-step-ico">2️⃣</span>
           <div>
-            <div style="font-weight:700;font-size:14px;margin-bottom:3px">Converti in CSV</div>
-            <div style="font-size:12px;color:var(--muted)">
-              Apri il file <strong>.xls</strong> in Excel o LibreOffice e salvalo come
-              <strong>CSV UTF-8</strong> (File → Salva con nome → CSV UTF-8).
-            </div>
+            <div class="welcome-step-title">Converti in CSV</div>
+            <div class="welcome-step-text">Apri il file <strong>.xls</strong> in Excel o LibreOffice e salvalo come <strong>CSV UTF-8</strong> (File → Salva con nome → CSV UTF-8).</div>
           </div>
         </div>
-
-        <div style="background:var(--bg3);border:1px solid var(--bdr);border-left:3px solid var(--cyan);
-          border-radius:var(--r);padding:14px 16px;display:flex;gap:14px;align-items:flex-start">
-          <span style="font-size:22px;flex-shrink:0">3️⃣</span>
+        <div class="welcome-step hl">
+          <span class="welcome-step-ico">3️⃣</span>
           <div>
-            <div style="font-weight:700;font-size:14px;margin-bottom:3px">Importa in HandyScan</div>
-            <div style="font-size:12px;color:var(--muted)">
-              Clicca <strong style="color:var(--cyan)">⬆ Importa</strong> in alto a destra
-              e seleziona il CSV. I tuoi dati vengono caricati e salvati localmente sul tuo dispositivo.
-            </div>
+            <div class="welcome-step-title">Importa in HandyScan</div>
+            <div class="welcome-step-text">Clicca <strong>⬆ Importa</strong> in alto a destra e seleziona il CSV. I dati vengono salvati localmente sul tuo dispositivo.</div>
           </div>
         </div>
-
-        <div style="background:var(--bg3);border:1px solid var(--bdr);border-left:3px solid var(--ok);
-          border-radius:var(--r);padding:14px 16px;display:flex;gap:14px;align-items:flex-start">
-          <span style="font-size:22px;flex-shrink:0">🔒</span>
+        <div class="welcome-step ok">
+          <span class="welcome-step-ico">🔒</span>
           <div>
-            <div style="font-weight:700;font-size:14px;margin-bottom:3px">I tuoi dati sono privati</div>
-            <div style="font-size:12px;color:var(--muted)">
-              Tutti i dati sono salvati <strong>solo su questo dispositivo</strong>.
-              Nessun altro utente può vedere le tue scansioni, anche condividendo lo stesso link dell'app.
-            </div>
+            <div class="welcome-step-title">I tuoi dati sono privati</div>
+            <div class="welcome-step-text">Tutto è salvato <strong>solo su questo dispositivo</strong>. Nessun altro utente vede le tue scansioni, anche condividendo lo stesso link.</div>
           </div>
         </div>
-
       </div>
-
-      <!-- CTA buttons -->
-      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <div class="welcome-cta">
         <label class="btn btn-primary" style="cursor:pointer;font-size:14px;padding:12px 24px">
           ⬆ Importa il mio CSV
           <input type="file" accept=".csv" style="display:none" onchange="welcomeImport(this)">
         </label>
-        <button class="btn btn-ghost" style="font-size:14px;padding:12px 24px"
-          onclick="closeWelcome()">
+        <button class="btn btn-ghost" style="font-size:14px;padding:12px 24px" onclick="closeWelcome()">
           Esplora l'app →
         </button>
       </div>
-
-      <p style="font-size:11px;color:var(--dim);margin-top:20px">
-        Puoi importare i dati in qualsiasi momento da <strong>⬆ Importa</strong> nell'header
-      </p>
+      <div class="welcome-hint">Puoi importare i dati in qualsiasi momento da <strong>⬆ Importa</strong> nell'header</div>
     </div>
   `;
   document.body.appendChild(overlay);
