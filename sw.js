@@ -1,11 +1,15 @@
-/* HandyScan PWA — Service Worker v1.2 */
-const CACHE = 'handyscan-v2';
+/* HandyScan PWA — Service Worker v1.4 */
+const CACHE = 'handyscan-v4';
 const ASSETS = [
   './',
   './index.html',
   './css/style.css',
+  './js/vendor/xlsx.full.min.js',
   './js/data.js',
+  './js/customers.js',
+  './js/appointments.js',
   './js/recall.js',
+  './js/demo.js',
   './js/app.js',
   './manifest.json',
   './icons/icon-192.png',

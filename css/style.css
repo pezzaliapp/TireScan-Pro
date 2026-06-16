@@ -572,3 +572,55 @@ td { padding: 11px 14px; vertical-align: middle; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--bdr); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--bdr2); }
+
+/* ══════════════════════════════════════════════
+   CLIENTI (anagrafica)  ·  AGENDA appuntamenti     (v1.3)
+══════════════════════════════════════════════ */
+.cust-toolbar, .appt-toolbar {
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+  margin-bottom: 12px;
+}
+.cust-stats {
+  display: flex; gap: 18px; flex-wrap: wrap;
+  font-size: 12px; color: var(--muted);
+  background: var(--bg2); border: 1px solid var(--bdr);
+  border-radius: var(--r); padding: 10px 14px; margin-bottom: 14px;
+}
+.cust-stats strong { color: var(--text); font-size: 14px; }
+
+/* Card appuntamento */
+.appt-card {
+  display: flex; align-items: stretch; gap: 14px;
+  background: var(--bg3); border: 1px solid var(--bdr);
+  border-left: 4px solid var(--cyan);
+  border-radius: var(--r); padding: 12px 14px; margin-bottom: 10px;
+}
+.appt-card.appt-past { opacity: .55; border-left-color: var(--muted); }
+.appt-when {
+  flex: 0 0 70px; text-align: center;
+  display: flex; flex-direction: column; justify-content: center;
+  border-right: 1px solid var(--bdr); padding-right: 12px;
+}
+.appt-date { font-family: var(--font-h); font-weight: 700; font-size: 15px; color: var(--text); }
+.appt-time { font-size: 13px; color: var(--cyan); font-weight: 600; }
+.appt-body { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 3px; }
+.appt-title { font-weight: 600; font-size: 14px; }
+.appt-note  { font-size: 12px; color: var(--muted); }
+.appt-meta  { font-size: 11px; color: var(--dim); }
+.appt-actions { display: flex; flex-direction: column; gap: 6px; justify-content: center; }
+
+@media (max-width: 560px) {
+  .appt-card { flex-wrap: wrap; }
+  .appt-when { flex-direction: row; gap: 8px; border-right: none; border-bottom: 1px solid var(--bdr); padding: 0 0 8px; width: 100%; flex-basis: 100%; justify-content: flex-start; }
+  .appt-actions { flex-direction: row; }
+}
+
+/* Chip targhe nell'anagrafica clienti */
+.plate-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.plate-chip {
+  font-family: var(--font-h); font-weight: 700; font-size: 11px;
+  letter-spacing: .4px; padding: 3px 8px; border-radius: 5px;
+  background: transparent; border: 1.5px solid var(--muted);
+  color: var(--text); cursor: pointer; transition: transform .1s, background .15s;
+}
+.plate-chip:hover { transform: translateY(-1px); background: var(--bg4); }

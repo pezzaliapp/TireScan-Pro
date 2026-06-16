@@ -84,15 +84,15 @@ function showWelcomeScreen() {
         <div class="welcome-step hl">
           <span class="welcome-step-ico">2️⃣</span>
           <div>
-            <div class="welcome-step-title">Converti in CSV</div>
-            <div class="welcome-step-text">Apri il file <strong>.xls</strong> in Excel o LibreOffice e salvalo come <strong>CSV UTF-8</strong> (File → Salva con nome → CSV UTF-8).</div>
+            <div class="welcome-step-title">Importa direttamente l'Excel</div>
+            <div class="welcome-step-text">Non serve convertire nulla: HandyScan legge i file <strong>.xlsx</strong> del portale (report scansioni) e dell'anagrafica clienti (<strong>ExportCustomers</strong>). Sono accettati anche i CSV.</div>
           </div>
         </div>
         <div class="welcome-step hl">
           <span class="welcome-step-ico">3️⃣</span>
           <div>
-            <div class="welcome-step-title">Importa in HandyScan</div>
-            <div class="welcome-step-text">Clicca <strong>⬆ Importa</strong> in alto a destra e seleziona il CSV. I dati vengono salvati localmente sul tuo dispositivo.</div>
+            <div class="welcome-step-title">Contatti e appuntamenti</div>
+            <div class="welcome-step-text">Importando l'anagrafica, ogni targa eredita <strong>email e cellulare</strong> del cliente: potrai richiamare per mail, telefono o WhatsApp e <strong>fissare appuntamenti</strong> in agenda.</div>
           </div>
         </div>
         <div class="welcome-step ok">
@@ -105,9 +105,12 @@ function showWelcomeScreen() {
       </div>
       <div class="welcome-cta">
         <label class="btn btn-primary" style="cursor:pointer;font-size:14px;padding:12px 24px">
-          ⬆ Importa il mio CSV
-          <input type="file" accept=".csv" style="display:none" onchange="welcomeImport(this)">
+          ⬆ Importa il mio file (Excel/CSV)
+          <input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="welcomeImport(this)">
         </label>
+        <button class="btn btn-ghost" style="font-size:14px;padding:12px 24px" onclick="if(window.loadDemoData)loadDemoData()">
+          🎬 Prova con dati demo
+        </button>
         <button class="btn btn-ghost" style="font-size:14px;padding:12px 24px" onclick="closeWelcome()">
           Esplora l'app →
         </button>
@@ -131,14 +134,12 @@ function closeWelcome() {
 function welcomeImport(input) {
   const file = input.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    const n = importCSV(ev.target.result);
+  parseAnyFile(file, 'auto').then(n => {
     closeWelcome();
+    if (window.CUST) CUST.load();
     if (window.toast) toast(n > 0 ? `✅ ${n} record importati` : '❌ Nessun record trovato', n > 0 ? 't-ok' : 't-err');
     if (window.showView) showView('dashboard');
-  };
-  reader.readAsText(file, 'UTF-8');
+  }).catch(() => { closeWelcome(); if (window.toast) toast('❌ Errore lettura file', 't-err'); });
 }
 
 window.closeWelcome  = closeWelcome;
@@ -195,6 +196,126 @@ function importCSV(csvText) {
   return imported;
 }
 
+/* ================================================================
+   IMPORT UNIFICATO Excel (.xlsx/.xls) + CSV
+   - parseAnyFile(file, type) → Promise<numero record importati>
+   - type: 'auto' (rileva report vs anagrafica), 'report', 'customers'
+   ================================================================ */
+
+/* Converte una cella in stringa; le date Excel diventano GG/MM/AAAA */
+function cellStr(v) {
+  if (v == null) return '';
+  if (v instanceof Date && !isNaN(v))
+    return `${String(v.getDate()).padStart(2,'0')}/${String(v.getMonth()+1).padStart(2,'0')}/${v.getFullYear()}`;
+  return String(v).trim();
+}
+
+/* Legge un file e restituisce una matrice (array di righe).
+   .xlsx/.xls via SheetJS; .csv via parser CSV.                  */
+function fileToRows(file) {
+  return new Promise((resolve, reject) => {
+    const name = (file.name || '').toLowerCase();
+    const isExcel = name.endsWith('.xlsx') || name.endsWith('.xls') || name.endsWith('.xlsm');
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('read'));
+    if (isExcel) {
+      reader.onload = ev => {
+        try {
+          if (typeof XLSX === 'undefined') { reject(new Error('XLSX non caricato')); return; }
+          const wb = XLSX.read(new Uint8Array(ev.target.result), { type: 'array', cellDates: true });
+          const ws = wb.Sheets[wb.SheetNames[0]];
+          const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '', blankrows: false });
+          resolve(aoa);
+        } catch (e) { reject(e); }
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      reader.onload = ev => {
+        try { resolve(window.CUST ? CUST.parseCSVRows(ev.target.result) : csvFallbackRows(ev.target.result)); }
+        catch (e) { reject(e); }
+      };
+      reader.readAsText(file, 'UTF-8');
+    }
+  });
+}
+
+/* fallback CSV se customers.js non è ancora caricato */
+function csvFallbackRows(text) {
+  return text.split('\n').map(l => l.replace(/\r$/, '').split(',')).filter(r => r.some(c => c.trim() !== ''));
+}
+
+/* Riconosce se una matrice è un'anagrafica clienti */
+function rowsAreCustomers(rows) {
+  return rows.some(r => r.some(v => String(v).toLowerCase().trim() === 'customer_code'));
+}
+
+/* Import record di scansione da matrice (Excel o CSV) */
+function importReportRows(rows) {
+  if (!rows || !rows.length) return 0;
+  // riga header del portale Cormach
+  let hIdx = rows.findIndex(r => {
+    const j = r.map(c => String(c).toLowerCase()).join('|');
+    return j.includes('targa veicolo') || j.includes('anteriore sinistro');
+  });
+  const isPortale = hIdx >= 0;
+  if (!isPortale) {
+    // formato nativo: header alla prima riga se contiene "targa"
+    const first = (rows[0] || []).map(c => String(c).toLowerCase()).join('|');
+    hIdx = first.includes('targa') ? 0 : -1;
+  }
+  let imported = 0;
+  for (let i = hIdx + 1; i < rows.length; i++) {
+    const r = rows[i]; if (!r) continue;
+    const g = idx => cellStr(r[idx]);
+    let rec;
+    if (isPortale) {
+      const targa = g(0).toUpperCase();
+      if (!targa || targa.startsWith('LISTA') || targa.startsWith('LIMITE') || targa === 'TARGA VEICOLO') continue;
+      rec = {
+        id: uid(), targa,
+        data:        g(1),  operatore: g(2), cliente: g(3),
+        ant_sx_tipo: g(6)  || '/R', ant_sx_mm:  parseFloat(g(7))  || 0,
+        ant_dx_tipo: g(8)  || '/R', ant_dx_mm:  parseFloat(g(9))  || 0,
+        post_sx_tipo:g(10) || '/R', post_sx_mm: parseFloat(g(11)) || 0,
+        post_dx_tipo:g(12) || '/R', post_dx_mm: parseFloat(g(13)) || 0,
+        deposito:    g(14).toLowerCase().includes('s'),
+        posizione:   g(15),
+      };
+    } else {
+      const targa = g(0).toUpperCase();
+      if (!targa) continue;
+      rec = {
+        id: uid(), targa,
+        data: g(1), operatore: g(2), cliente: g(3),
+        ant_sx_tipo: g(4)  || '/R', ant_sx_mm:  parseFloat(g(5))  || 0,
+        ant_dx_tipo: g(6)  || '/R', ant_dx_mm:  parseFloat(g(7))  || 0,
+        post_sx_tipo:g(8)  || '/R', post_sx_mm: parseFloat(g(9))  || 0,
+        post_dx_tipo:g(10) || '/R', post_dx_mm: parseFloat(g(11)) || 0,
+        deposito:    g(12).toLowerCase().includes('s'),
+        posizione:   g(13),
+      };
+    }
+    if (!rec.targa) continue;
+    const idx = records.findIndex(x => x.targa === rec.targa);
+    if (idx >= 0) records[idx] = { ...rec, id: records[idx].id };
+    else records.push(rec);
+    imported++;
+  }
+  saveData();
+  return imported;
+}
+
+/* Entry point unico usato da tutti i pulsanti Importa */
+function parseAnyFile(file, type = 'auto') {
+  return fileToRows(file).then(rows => {
+    if (type === 'customers') return window.CUST ? CUST.importRows(rows) : 0;
+    if (type === 'report')    return importReportRows(rows);
+    // auto-detect
+    if (rowsAreCustomers(rows)) return window.CUST ? CUST.importRows(rows) : 0;
+    return importReportRows(rows);
+  });
+}
+
 /* ── Export CSV ── */
 function exportCSV() {
   const header = 'Targa,Data,Operatore,Cliente,ANT SX Tipo,ANT SX mm,ANT DX Tipo,ANT DX mm,POST SX Tipo,POST SX mm,POST DX Tipo,POST DX mm,Deposito,Posizione';
@@ -215,6 +336,7 @@ function exportCSV() {
 window.HS = window.HS || {};
 Object.assign(window.HS, {
   records, loadData, saveData, importCSV, exportCSV,
+  parseAnyFile, fileToRows, importReportRows, cellStr,
   isFirstLaunch, showWelcomeScreen,
   uid, getMinMm, getStatus, mmClass, parseDate, escHTML, todayStr,
   WARN_MM, CRIT_MM,

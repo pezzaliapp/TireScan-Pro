@@ -19,8 +19,12 @@ handyscan-pwa/
 ├── css/
 │   └── style.css       ← Design system completo
 ├── js/
-│   ├── data.js         ← Storage, import/export CSV, dati campione
-│   ├── recall.js       ← Modulo richiami clienti via email
+│   ├── vendor/
+│   │   └── xlsx.full.min.js  ← SheetJS (lettura Excel, offline)
+│   ├── data.js         ← Storage, import Excel/CSV (report), export
+│   ├── customers.js    ← Anagrafica clienti + match contatti per nome
+│   ├── appointments.js ← Agenda appuntamenti + export .ics
+│   ├── recall.js       ← Richiami: email / telefono / WhatsApp
 │   └── app.js          ← Logica principale (viste, grafici, form)
 ├── icons/
 │   └── icon-192.svg    ← Icona app
@@ -40,7 +44,9 @@ handyscan-pwa/
 | 📬 **Richiami** | Email clienti: critico, periodico, stagionale, anniversario |
 | 📧 **Gestione email** | Import/export CSV email+telefono per ogni cliente |
 | 📊 **Statistiche** | 4 grafici: stato, deposito, trend mm, operatori |
-| ⬆ **Import CSV** | Riconosce formato portale Cormach e formato nativo |
+| ⬆ **Import Excel/CSV** | Legge `.xlsx` diretti: report scansioni **e** anagrafica clienti |
+| 👥 **Anagrafica** | Email, telefono, cellulare, indirizzo collegati per nome alla targa |
+| 📅 **Agenda** | Appuntamenti con export `.ics` per il calendario del telefono |
 | ⬇ **Export CSV** | Esporta tutti i dati in CSV compatibile Excel |
 | 🖨 **Stampa** | Scheda cliente ottimizzata per stampa/PDF |
 | 📲 **Installabile** | PWA: si installa su iOS, Android, PC come app nativa |
@@ -83,15 +89,65 @@ Trascina la cartella su [netlify.com/drop](https://app.netlify.com/drop) — onl
 
 ---
 
-## 📥 Import dati da Handy Scan (portale Cormach)
+## 🎬 Modalità demo (strumento di vendita)
 
+Per dimostrare HandyScan abbinato all'Handy Scan senza dati reali:
+
+- **Un clic:** nella schermata di benvenuto premi **🎬 Prova con dati demo** (oppure il pulsante 🎬 nella sezione **👥 Clienti**). Vengono caricati **10 clienti** fittizi — 3 flotte con **5 targhe ciascuna** (autotrasporti, taxi, autonoleggio) e 7 clienti con una targa — e **22 scansioni** con casi critici, attenzione, periodici e un anniversario. Dashboard, allarmi, richiami e contatti si popolano subito.
+- **Dimostrando l'import:** la cartella `demo/` contiene `demo_StoreReportByPlate.xlsx` (report) e `demo_ExportCustomers.xlsx` (anagrafica). Importali con **⬆ Importa** per mostrare dal vivo la lettura diretta dell'Excel: ogni targa eredita email e cellulare del cliente.
+
+> Multi-targa: un cliente con più veicoli mostra tutte le targhe come chip colorate per stato; il pulsante **📅 Appunt.** chiede per quale targa fissare l'appuntamento.
+
+## 🎬 Dati demo (strumento di vendita)
+
+Per mostrare l'app a un cliente senza dati reali, clicca **🎬 Prova con dati demo**
+(schermata iniziale o sezione **👥 Clienti**). Vengono caricati **10 clienti fittizi**:
+
+- **3 flotte** (autotrasporti, taxi, autonoleggio) con **5 targhe ciascuna**
+- **7 clienti privati** con 1 targa
+
+con **22 scansioni inventate** che mostrano subito il valore di Handy Scan: dashboard con
+critici/attenzione, **16 richiami già pronti** (con email e cellulare compilati), veicoli in
+deposito e clienti multi-targa. Tutto è simulato e resta solo sul dispositivo.
+
+## 👥 Anagrafica e clienti multi-targa
+
+Nella sezione **👥 Clienti** ogni riga mostra contatti (email, telefono, **💬 WhatsApp**) e le
+**targhe collegate** come chip colorate per stato (verde/arancio/rosso). Il pulsante
+**📅 Appuntamento** apre l'agenda: se il cliente ha più targhe, puoi **scegliere la targa** dal
+menu a tendina. Cliccando una singola targa fissi l'appuntamento direttamente per quel veicolo.
+
+## 📥 Import dati (Excel diretto, niente conversioni)
+
+HandyScan ora legge **direttamente i file Excel** (`.xlsx`/`.xls`) oltre ai CSV, sia per i
+**report scansioni** sia per l'**anagrafica clienti**. Il pulsante **⬆ Importa** riconosce
+automaticamente il tipo di file.
+
+### 1) Report scansioni (per targa)
 1. Vai su `portal.cormachsrl.com/tireapp/tires-store`
-2. Applica filtri e clicca **Scarica**
-3. Apri il `.xls` in Excel → **Salva come CSV UTF-8**
-4. In HandyScan → **⬆ Importa** → seleziona il CSV
-5. I record vengono uniti automaticamente (merge per targa)
+2. Applica i filtri e clicca **Scarica** (`StoreReportByPlate_….xlsx`)
+3. In HandyScan → **⬆ Importa** → seleziona il file `.xlsx`
+4. I record vengono uniti automaticamente (merge per targa)
 
-> L'app riconosce automaticamente il formato del portale Cormach.
+### 2) Anagrafica clienti (contatti)
+1. Esporta i clienti dal gestionale (`ExportCustomers_….xlsx`)
+2. In HandyScan → vai su **👥 Clienti** → **⬆ Importa anagrafica**
+3. Ogni targa eredita **email e cellulare** del cliente tramite match per nome
+   (normalizzazione di maiuscole/accenti/forme societarie)
+
+> Sono ancora supportati i CSV (separatore `,` o `;`). Tutto resta salvato solo sul tuo dispositivo.
+
+## 📬 Richiami — email, telefono, WhatsApp
+Per ogni richiamo (critico, periodico, stagionale, anniversario) trovi i pulsanti:
+**📧 Mail** (testo precompilato), **📞 Chiama** (`tel:`), **💬 WhatsApp** (`wa.me`) e
+**📅 Appuntamento**. I contatti arrivano dall'anagrafica e sono sovrascrivibili per singola targa.
+
+## 📅 Agenda appuntamenti
+Crea appuntamenti da un richiamo, dal dettaglio veicolo o dall'anagrafica. Ogni appuntamento
+può essere **aggiunto al calendario del dispositivo** (iPhone/Android/PC) tramite file **`.ics`**
+con promemoria automatico 1 ora prima.
+
+## 📥 Import vecchio metodo (solo CSV legacy)
 
 ---
 

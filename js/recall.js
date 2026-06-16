@@ -33,6 +33,28 @@ function rcSaveAll() {
   localStorage.setItem(RC_EMAIL_KEY, JSON.stringify(rcEmails));
 }
 
+/* ── Risoluzione contatto ──
+   Priorità: contatto manuale (rcEmails per targa) → anagrafica clienti
+   (match per nome). Così ogni targa eredita email/cellulare del cliente. */
+function rcResolveContact(rec) {
+  const manual = rcEmails[rec.targa] || {};
+  const c = (window.CUST && CUST.findByName) ? CUST.findByName(rec.cliente) : null;
+  return {
+    email:    manual.email    || (c ? CUST.email(c) : '') || '',
+    telefono: manual.telefono || (c ? CUST.phone(c) : '') || '',
+    note:     manual.note     || (c ? CUST.fullAddr(c) : '') || '',
+    fromAnagrafica: !!c && !manual.email && !manual.telefono,
+    customer: c || null,
+  };
+}
+
+/* Numero per link WhatsApp (formato internazionale senza +) */
+function waNumber(tel) {
+  let n = String(tel || '').replace(/[^\d+]/g, '').replace(/^00/, '').replace(/^\+/, '');
+  if (/^3\d{8,9}$/.test(n)) n = '39' + n;   // cellulare IT senza prefisso
+  return n;
+}
+
 /* ── Math utils ── */
 function monthsDiff(d1,d2){ return Math.floor((d2-d1)/(1000*60*60*24*30.44)); }
 function yearsDiff(d1,d2) { return Math.floor((d2-d1)/(1000*60*60*24*365.25)); }
@@ -50,8 +72,9 @@ function computeRecalls(records) {
     const dataScan = HS.parseDate(r.data);
     if (!dataScan || dataScan.getFullYear() < 2000) return;
     const minMm = HS.getMinMm(r);
-    const email    = rcEmails[r.targa]?.email    || '';
-    const telefono = rcEmails[r.targa]?.telefono || '';
+    const contact  = rcResolveContact(r);
+    const email    = contact.email;
+    const telefono = contact.telefono;
     const base = { targa:r.targa, cliente:r.cliente, data:r.data, minMm, email, telefono, r, dataScan };
 
     /* 1 — Critico */
@@ -254,8 +277,11 @@ function renderRecallView(records) {
   const card = (rc) => {
     const sent     = isSent(rc);
     const hasEmail = !!rc.email;
+    const hasTel   = !!rc.telefono;
     const uc       = uCol[rc.urgenza]||'var(--muted)';
-    const ei       = rcEmails[rc.targa]||{};
+    const tel      = HS.escHTML(rc.telefono||'');
+    const telHref  = (rc.telefono||'').replace(/\s/g,'');
+    const wa       = waNumber(rc.telefono);
     return `
     <div class="rc-card${sent?' rc-done':''}">
       <div class="rc-card-head">
@@ -276,14 +302,19 @@ function renderRecallView(records) {
             ? `<a class="rc-email-link" href="mailto:${HS.escHTML(rc.email)}">${HS.escHTML(rc.email)}</a>`
             : `<button class="btn btn-ghost btn-xs" onclick="rcEditEmail('${HS.escHTML(rc.targa)}')">+ Aggiungi</button>`}
         </div>
-        <div class="rc-info-row"><span class="rc-info-label">Telefono</span><span>${HS.escHTML(ei.telefono||'—')}</span></div>
+        <div class="rc-info-row"><span class="rc-info-label">Telefono</span>
+          ${hasTel ? `<a class="rc-email-link" href="tel:${HS.escHTML(telHref)}">${tel}</a>` : '<span style="color:var(--muted)">—</span>'}
+        </div>
       </div>
       <div class="rc-card-actions">
         ${hasEmail
-          ? `<button class="btn btn-primary btn-sm" onclick="rcDoOpenMail('${HS.escHTML(rc.targa)}','${rc.tipo}')">📧 Apri in Mail</button>`
+          ? `<button class="btn btn-primary btn-sm" onclick="rcDoOpenMail('${HS.escHTML(rc.targa)}','${rc.tipo}')">📧 Mail</button>`
           : `<button class="btn btn-ghost btn-sm" onclick="rcEditEmail('${HS.escHTML(rc.targa)}')">📧 Aggiungi email</button>`}
+        ${hasTel ? `<a class="btn btn-ghost btn-sm" href="tel:${HS.escHTML(telHref)}">📞 Chiama</a>` : ''}
+        ${hasTel ? `<a class="btn btn-ghost btn-sm" href="https://wa.me/${wa}" target="_blank" rel="noopener">💬 WhatsApp</a>` : ''}
+        <button class="btn btn-ghost btn-sm" onclick="apptNew('${HS.escHTML(rc.targa)}','${HS.escHTML(rc.cliente).replace(/'/g,'')}')">📅 Appuntamento</button>
         <button class="btn btn-ghost btn-sm" onclick="rcDoPreview('${HS.escHTML(rc.targa)}','${rc.tipo}')">👁 Anteprima</button>
-        <button class="btn btn-ghost btn-sm" onclick="rcDoCopy('${HS.escHTML(rc.targa)}','${rc.tipo}')">📋 Copia testo</button>
+        <button class="btn btn-ghost btn-sm" onclick="rcDoCopy('${HS.escHTML(rc.targa)}','${rc.tipo}')">📋 Copia</button>
         ${!sent
           ? `<button class="btn btn-ghost btn-sm" onclick="rcDoMarkSent('${HS.escHTML(rc.targa)}','${rc.tipo}')">✅ Segna inviato</button>
              <button class="btn btn-ghost btn-sm" onclick="rcDoIgnore('${HS.escHTML(rc.targa)}','${rc.tipo}')">🚫 Ignora</button>`
@@ -309,20 +340,22 @@ function renderEmailManager(records) {
       <label class="btn btn-ghost btn-sm" style="cursor:pointer">⬆ Importa CSV<input type="file" accept=".csv" style="display:none" onchange="rcImportFile(this)"></label>
       <button class="btn btn-ghost btn-sm" onclick="rcExportEmails()">⬇ Esporta CSV</button>
     </div>
-    <div class="rc-email-hint">Formato CSV: <code>Targa,Email,Telefono,Note</code></div>
+    <div class="rc-email-hint">I contatti arrivano dall'<strong>anagrafica clienti</strong> (match per nome). Qui puoi sovrascriverli manualmente per singola targa. Formato CSV: <code>Targa,Email,Telefono,Note</code></div>
     <div class="table-wrap"><div class="table-scroll">
       <table>
-        <thead><tr><th>Targa</th><th>Cliente</th><th>Email</th><th>Telefono</th><th>Stato</th><th></th></tr></thead>
+        <thead><tr><th>Targa</th><th>Cliente</th><th>Email</th><th>Telefono</th><th>Origine</th><th></th></tr></thead>
         <tbody id="rc-em-body">
           ${records.map(r => {
-            const i = rcEmails[r.targa]||{};
-            const ok = !!i.email;
+            const ct = rcResolveContact(r);
+            const ok = !!ct.email || !!ct.telefono;
+            const src = (rcEmails[r.targa] && (rcEmails[r.targa].email || rcEmails[r.targa].telefono)) ? 'manuale'
+                       : (ct.customer ? 'anagrafica' : '—');
             return `<tr data-q="${HS.escHTML((r.targa+' '+r.cliente).toLowerCase())}">
               <td><span class="targa-chip">${HS.escHTML(r.targa)}</span></td>
               <td>${HS.escHTML(r.cliente)}</td>
-              <td>${ok?`<a href="mailto:${HS.escHTML(i.email)}" style="color:var(--cyan)">${HS.escHTML(i.email)}</a>`:'<span style="color:var(--muted)">—</span>'}</td>
-              <td>${HS.escHTML(i.telefono||'—')}</td>
-              <td><span class="${ok?'mm-ok':'mm-warn'}" style="font-size:12px;font-weight:600">${ok?'✓ OK':'⚠ Mancante'}</span></td>
+              <td>${ct.email?`<a href="mailto:${HS.escHTML(ct.email)}" style="color:var(--cyan)">${HS.escHTML(ct.email)}</a>`:'<span style="color:var(--muted)">—</span>'}</td>
+              <td>${ct.telefono?`<a href="tel:${HS.escHTML(ct.telefono.replace(/\s/g,''))}" style="color:var(--cyan)">${HS.escHTML(ct.telefono)}</a>`:'<span style="color:var(--muted)">—</span>'}</td>
+              <td><span class="${ok?'mm-ok':'mm-warn'}" style="font-size:11px;font-weight:600">${ok?src:'⚠ Mancante'}</span></td>
               <td><button class="btn btn-ghost btn-xs" onclick="rcEditEmail('${HS.escHTML(r.targa)}')">✎</button></td>
             </tr>`;
           }).join('')}

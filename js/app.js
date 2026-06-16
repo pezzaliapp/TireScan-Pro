@@ -39,6 +39,8 @@ function showView(name) {
   if (name === 'list')      renderList();
   if (name === 'alerts')    renderAlerts();
   if (name === 'stats')     renderStats();
+  if (name === 'customers'  && window.CUST) CUST.renderView();
+  if (name === 'appointments' && window.APPT) APPT.renderView();
   if (name === 'recalls') {
     RC.renderView(HS.getRecords());
     document.querySelectorAll('.rc-tab').forEach(t => t.classList.remove('active'));
@@ -161,6 +163,7 @@ function openDetail(id) {
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-ghost" onclick="openEdit('${HS.escHTML(r.id)}')">✎ Modifica</button>
+        <button class="btn btn-ghost" onclick="apptNew('${HS.escHTML(r.targa)}','${HS.escHTML(r.cliente).replace(/'/g,'')}')">📅 Appuntamento</button>
         <button class="btn btn-primary" onclick="window.print()">🖨 Stampa</button>
         <button class="btn btn-danger" onclick="deleteRecord('${HS.escHTML(r.id)}')">✕ Elimina</button>
       </div>
@@ -380,15 +383,23 @@ window.deleteRecord=deleteRecord;
 
 /* ── Import/Export ── */
 function handleImport(e) {
-  const file=e.target.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    const n=HS.importCSV(ev.target.result);
-    toast(n>0?`✅ ${n} record importati`:'❌ Nessun record trovato', n>0?'t-ok':'t-err');
-    showView('dashboard');
-  };
-  reader.readAsText(file,'UTF-8');
-  e.target.value='';
+  const file = e.target.files[0]; if (!file) return;
+  HS.parseAnyFile(file, 'auto').then(n => {
+    if (window.CUST) CUST.load();
+    const isCust = /customers/i.test(file.name);
+    toast(n > 0
+      ? `✅ ${n} ${isCust ? 'clienti' : 'record'} importati`
+      : '❌ Nessun dato riconosciuto nel file', n > 0 ? 't-ok' : 't-err');
+    if (n > 0) {
+      if (window.CUST) CUST.renderView();
+      if (window.RC) RC.renderView(HS.getRecords());
+      showView(isCust ? 'customers' : 'dashboard');
+    }
+  }).catch(err => {
+    console.warn('Import:', err);
+    toast('❌ Errore lettura file (formato non valido?)', 't-err');
+  });
+  e.target.value = '';
 }
 
 /* ── Theme ── */
@@ -430,6 +441,8 @@ window.addEventListener('DOMContentLoaded', ()=>{
   applyTheme(savedTheme);
 
   HS.loadData();
+  if (window.CUST) CUST.init();
+  if (window.APPT) APPT.init();
   RC.init();
   showView('dashboard');
 
