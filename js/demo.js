@@ -492,8 +492,11 @@ function demoCustomerRows() {
 }
 
 function loadDemoData() {
-  if (window.HS && HS.getRecords().length &&
-      !confirm('Caricare i dati demo? Verranno aggiunti a quelli già presenti.')) return;
+  const has = (window.HS && HS.getRecords().length) || (window.CUST && CUST.getAll && CUST.getAll().length);
+  if (has && !confirm("Caricare i dati demo? Sostituiranno i dati attualmente presenti.")) return;
+
+  // pulizia: si parte da zero così la demo è sempre coerente
+  if (window.HS && HS.resetAll) HS.resetAll();
 
   // 1) anagrafica clienti
   if (window.CUST) CUST.importRows(demoCustomerRows());

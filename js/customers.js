@@ -263,6 +263,7 @@ function renderCustomersView() {
       <label class="btn btn-ghost btn-sm" style="cursor:pointer">⬆ Importa<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="custImportFile(this)"></label>
       <button class="btn btn-ghost btn-sm" onclick="CUST.exportCSV()">⬇ Esporta</button>
       ${window.loadDemoData ? `<button class="btn btn-ghost btn-sm" onclick="loadDemoData()">🎬 Demo</button>` : ''}
+      <button class="btn btn-ghost btn-sm" onclick="resetAllData()" title="Azzera tutti i dati locali">🗑 Azzera</button>
     </div>
     <div class="cust-stats">
       <span>👥 <strong>${st.customers}</strong> clienti</span>

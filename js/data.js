@@ -332,11 +332,31 @@ function exportCSV() {
   URL.revokeObjectURL(url);
 }
 
+/* ── Reset / azzeramento dati ──
+   Cancella scansioni, anagrafica clienti, appuntamenti e contatti.
+   Mantiene le impostazioni officina (firma, soglie) e il tema.        */
+function resetAll() {
+  ['handyscan_records', 'handyscan_customers', 'handyscan_appointments',
+   'handyscan_rc_emails', 'handyscan_rc_sent'].forEach(k => { try { localStorage.removeItem(k); } catch {} });
+  loadData();
+  if (window.CUST && CUST.load) CUST.load();
+  if (window.APPT && APPT.init) APPT.init();
+  if (window.RC   && RC.init)   RC.init();
+}
+window.resetAllData = function () {
+  if (!confirm("Azzerare TUTTI i dati locali (scansioni, clienti, appuntamenti, contatti)? Le impostazioni officina restano. Azione non reversibile.")) return;
+  resetAll();
+  if (window.toast) toast('🗑 Dati azzerati', '');
+  if (window.CUST && CUST.renderView) CUST.renderView();
+  if (window.showView) showView('dashboard');
+};
+
 /* ── Expose ── */
 window.HS = window.HS || {};
 Object.assign(window.HS, {
   records, loadData, saveData, importCSV, exportCSV,
   parseAnyFile, fileToRows, importReportRows, cellStr,
+  resetAll,
   isFirstLaunch, showWelcomeScreen,
   uid, getMinMm, getStatus, mmClass, parseDate, escHTML, todayStr,
   WARN_MM, CRIT_MM,
