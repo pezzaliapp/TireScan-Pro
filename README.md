@@ -218,3 +218,9 @@ Creato per i clienti **Handy Scan – Cormach Srl**, Correggio (RE)
 
 - **Scheda Report Pneumatici** (`js/report.js`): dal dettaglio veicolo il pulsante «📄 Report pneumatici» apre una scheda stampabile ispirata al CarReport del portale Cormach — intestazione officina (dalle impostazioni richiami), dati veicolo, 4 quadranti con grafica battistrada SVG e fascia rossa proporzionale all'usura, valore «Media» evidenziato, icone di stato, legenda e riquadro «Pneumatici in deposito» con posizione. Layout dedicato per stampa/salvataggio PDF (A4). Include la nota: non sostituisce il report ufficiale HandyScan Manager.
 - Service worker `v7` con precache del nuovo modulo.
+
+## 🆕 Changelog v2.2
+
+- **Import a prova di tracciato**: le colonne del report portale ora vengono riconosciute **per nome di intestazione** ("Targa veicolo", "Anteriore sinistro"/"Min", "Pneumatici in deposito"…) e non più per posizione fissa. Se Cormach aggiunge o sposta colonne (es. email cliente, modello), i millimetri finiscono comunque nei campi giusti. Fallback automatico sugli indici storici se le intestazioni non sono riconoscibili.
+- Se il file del portale contiene una **colonna email**, l'indirizzo viene salvato automaticamente nei contatti richiami della targa (senza sovrascrivere quelli inseriti a mano).
+- Service worker `v8`.

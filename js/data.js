@@ -258,31 +258,103 @@ function rowsAreCustomers(rows) {
   return rows.some(r => r.some(v => String(v).toLowerCase().trim() === 'customer_code'));
 }
 
-/* Import record di scansione da matrice (Excel o CSV) */
-function importReportRows(rows) {
-  if (!rows || !rows.length) return 0;
-  // riga header del portale Cormach
-  let hIdx = rows.findIndex(r => {
-    const j = r.map(c => String(c).toLowerCase()).join('|');
+/* Import record di scansione da matrice (Excel o CSV) ──
+   Mappatura ROBUSTA per NOME di intestazione (il tracciato del portale
+   può cambiare: colonne email, modello, ecc. non sfalsano più i dati).
+   Fallback su indici fissi solo se le intestazioni non vengono trovate. */
+function findHeaderRow(rows) {
+  return rows.findIndex(r => {
+    const j = (r || []).map(c => String(c).toLowerCase()).join('|');
     return j.includes('targa veicolo') || j.includes('anteriore sinistro');
   });
+}
+
+/* Costruisce la mappa colonna→campo leggendo le intestazioni */
+function mapPortalHeader(header) {
+  const h = header.map(c => String(c ?? '').toLowerCase().trim());
+  const idx = (pred) => h.findIndex(pred);
+  const wheel = (label) => {
+    const i = idx(c => c.includes(label));
+    if (i < 0) return null;
+    // il valore mm è la colonna "min" immediatamente successiva al tipo
+    const mmIdx = (h[i + 1] || '').includes('min') ? i + 1
+                : idx((c, k) => k > i && c.includes('min'));
+    return { tipo: i, mm: mmIdx >= 0 ? mmIdx : i + 1 };
+  };
+  const m = {
+    targa:     idx(c => c.includes('targa')),
+    data:      idx(c => c === 'date' || c.includes('data')),
+    operatore: idx(c => c.includes('operatore')),
+    cliente:   idx(c => c.includes('cliente')),
+    email:     idx(c => c.includes('email') || c.includes('e-mail')),
+    asx: wheel('anteriore sinistro'),
+    adx: wheel('anteriore destro'),
+    psx: wheel('posteriore sinistro'),
+    pdx: wheel('posteriore destro'),
+    deposito:  idx(c => c.includes('deposito')),
+    posizione: idx(c => c.includes('posizione')),
+  };
+  // valida: servono almeno targa e una ruota
+  if (m.targa < 0 || !m.asx) return null;
+  return m;
+}
+
+/* Salva l'email trovata nel file nei contatti richiami della targa
+   (solo se non già impostata manualmente).                          */
+function storeImportedEmail(targa, email) {
+  if (!targa || !email || !/\S+@\S+\.\S+/.test(email)) return;
+  try {
+    const key = 'handyscan_rc_emails';
+    const all = JSON.parse(localStorage.getItem(key) || '{}');
+    if (!all[targa] || !all[targa].email) {
+      all[targa] = { ...(all[targa] || {}), email: email.trim() };
+      localStorage.setItem(key, JSON.stringify(all));
+    }
+  } catch {}
+}
+
+function importReportRows(rows) {
+  if (!rows || !rows.length) return 0;
+  const hIdx = findHeaderRow(rows);
   const isPortale = hIdx >= 0;
+  const map = isPortale ? mapPortalHeader(rows[hIdx]) : null;
+  let start = hIdx + 1;
+
   if (!isPortale) {
-    // formato nativo: header alla prima riga se contiene "targa"
     const first = (rows[0] || []).map(c => String(c).toLowerCase()).join('|');
-    hIdx = first.includes('targa') ? 0 : -1;
+    start = first.includes('targa') ? 1 : 0;
   }
+
   let imported = 0;
-  for (let i = hIdx + 1; i < rows.length; i++) {
+  for (let i = start; i < rows.length; i++) {
     const r = rows[i]; if (!r) continue;
-    const g = idx => cellStr(r[idx]);
-    let rec;
-    if (isPortale) {
+    const g = idx => (idx == null || idx < 0) ? '' : cellStr(r[idx]);
+    let rec, email = '';
+
+    if (isPortale && map) {
+      const targa = g(map.targa).toUpperCase();
+      if (!targa || targa.startsWith('LISTA') || targa.startsWith('LIMITE') ||
+          targa.startsWith('SOLO') || targa === 'TARGA VEICOLO') continue;
+      email = g(map.email);
+      const wh = w => w ? { tipo: g(w.tipo) || '/R', mm: parseFloat(g(w.mm)) || 0 } : { tipo: '/R', mm: 0 };
+      const asx = wh(map.asx), adx = wh(map.adx), psx = wh(map.psx), pdx = wh(map.pdx);
+      rec = {
+        id: uid(), targa,
+        data: g(map.data), operatore: g(map.operatore), cliente: g(map.cliente),
+        ant_sx_tipo:  asx.tipo, ant_sx_mm:  asx.mm,
+        ant_dx_tipo:  adx.tipo, ant_dx_mm:  adx.mm,
+        post_sx_tipo: psx.tipo, post_sx_mm: psx.mm,
+        post_dx_tipo: pdx.tipo, post_dx_mm: pdx.mm,
+        deposito:  g(map.deposito).toLowerCase().startsWith('s') || g(map.deposito).toLowerCase() === 'yes',
+        posizione: g(map.posizione),
+      };
+    } else if (isPortale) {
+      // header portale trovato ma mappatura fallita: indici storici
       const targa = g(0).toUpperCase();
       if (!targa || targa.startsWith('LISTA') || targa.startsWith('LIMITE') || targa === 'TARGA VEICOLO') continue;
       rec = {
         id: uid(), targa,
-        data:        g(1),  operatore: g(2), cliente: g(3),
+        data: g(1), operatore: g(2), cliente: g(3),
         ant_sx_tipo: g(6)  || '/R', ant_sx_mm:  parseFloat(g(7))  || 0,
         ant_dx_tipo: g(8)  || '/R', ant_dx_mm:  parseFloat(g(9))  || 0,
         post_sx_tipo:g(10) || '/R', post_sx_mm: parseFloat(g(11)) || 0,
@@ -291,8 +363,9 @@ function importReportRows(rows) {
         posizione:   g(15),
       };
     } else {
+      // formato nativo HandyScan (export dell'app stessa)
       const targa = g(0).toUpperCase();
-      if (!targa) continue;
+      if (!targa || targa === 'TARGA') continue;
       rec = {
         id: uid(), targa,
         data: g(1), operatore: g(2), cliente: g(3),
@@ -300,13 +373,14 @@ function importReportRows(rows) {
         ant_dx_tipo: g(6)  || '/R', ant_dx_mm:  parseFloat(g(7))  || 0,
         post_sx_tipo:g(8)  || '/R', post_sx_mm: parseFloat(g(9))  || 0,
         post_dx_tipo:g(10) || '/R', post_dx_mm: parseFloat(g(11)) || 0,
-        deposito:    g(12).toLowerCase().includes('s'),
+        deposito:    g(12).toLowerCase().startsWith('s'),
         posizione:   g(13),
       };
     }
     if (!rec.targa) continue;
-    const idx = records.findIndex(x => x.targa === rec.targa);
-    if (idx >= 0) records[idx] = { ...rec, id: records[idx].id };
+    if (email) storeImportedEmail(rec.targa, email);
+    const idx2 = records.findIndex(x => x.targa === rec.targa);
+    if (idx2 >= 0) records[idx2] = { ...rec, id: records[idx2].id };
     else records.push(rec);
     imported++;
   }
