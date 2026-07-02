@@ -124,9 +124,13 @@ function showWelcomeScreen() {
         </div>
       </div>
       <div class="welcome-cta">
-        <label class="btn btn-primary" style="cursor:pointer;font-size:14px;padding:12px 24px">
-          ⬆ Importa il mio file (Excel/CSV)
-          <input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="welcomeImport(this)">
+        <label class="btn btn-primary" style="cursor:pointer;font-size:14px;padding:12px 24px" title="L'Excel della sezione Magazzino del portale">
+          ⬆ Importa scansioni (Magazzino)
+          <input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="welcomeImport(this, 'scansioni')">
+        </label>
+        <label class="btn btn-primary" style="cursor:pointer;font-size:14px;padding:12px 24px" title="L'elenco clienti esportato dalla sezione Anagrafiche del portale">
+          👥 Importa clienti (Anagrafiche)
+          <input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="welcomeImport(this, 'clienti')">
         </label>
         <button class="btn btn-ghost" style="font-size:14px;padding:12px 24px" onclick="if(window.loadDemoData)loadDemoData()">
           🎬 Prova con dati demo
@@ -152,15 +156,17 @@ function closeWelcome() {
   }
 }
 
-function welcomeImport(input) {
+function welcomeImport(input, expected) {
   const file = input.files[0];
   if (!file) return;
+  closeWelcome();
+  if (window.doImport) { doImport(file, expected); return; }
+  // fallback (doImport non ancora disponibile)
   parseAnyFile(file, 'auto').then(n => {
-    closeWelcome();
     if (window.CUST) CUST.load();
     if (window.toast) toast(n > 0 ? `✅ ${n} record importati` : '❌ Nessun record trovato', n > 0 ? 't-ok' : 't-err');
     if (window.showView) showView('dashboard');
-  }).catch(() => { closeWelcome(); if (window.toast) toast('❌ Errore lettura file', 't-err'); });
+  }).catch(() => { if (window.toast) toast('❌ Errore lettura file', 't-err'); });
 }
 
 window.closeWelcome  = closeWelcome;
