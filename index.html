@@ -200,10 +200,13 @@
   <!-- ╔══════════════ STATISTICHE ══════════════╗ -->
   <div id="view-stats" class="view">
     <div class="section-head"><span class="section-title">📊 Statistiche</span></div>
+    <div id="stats-kpi" class="stats-grid" style="margin-bottom:16px"></div>
     <div class="charts-grid">
       <div class="card"><div class="card-title">Distribuzione stato</div><div class="chart-wrap"><canvas id="ch-stato"></canvas></div></div>
-      <div class="card"><div class="card-title">Deposito</div><div class="chart-wrap"><canvas id="ch-dep"></canvas></div></div>
-      <div class="card" style="grid-column:1/-1"><div class="card-title">Spessore minimo per veicolo</div><div class="chart-wrap chart-wrap-tall"><canvas id="ch-trend"></canvas></div></div>
+      <div class="card"><div class="card-title">Veicoli per fascia di profondità (mm)</div><div class="chart-wrap"><canvas id="ch-fasce"></canvas></div></div>
+      <div class="card" style="grid-column:1/-1"><div class="card-title">🔴 Priorità richiamo — veicoli con meno battistrada</div><div class="chart-wrap chart-wrap-tall"><canvas id="ch-top"></canvas></div></div>
+      <div class="card"><div class="card-title">Scansioni per mese (ultimi 12)</div><div class="chart-wrap"><canvas id="ch-mesi"></canvas></div></div>
+      <div class="card"><div class="card-title">Stagione pneumatici montati</div><div class="chart-wrap"><canvas id="ch-stagione"></canvas></div></div>
       <div class="card" style="grid-column:1/-1"><div class="card-title">Scansioni per operatore</div><div class="chart-wrap"><canvas id="ch-op"></canvas></div></div>
     </div>
   </div>

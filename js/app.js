@@ -5,7 +5,7 @@
 'use strict';
 
 /* ── Versione app (aggiornare qui a ogni release) ── */
-const APP_VERSION = '2.5.0';
+const APP_VERSION = '2.6.0';
 
 /* ── State ── */
 let currentView  = 'dashboard';
@@ -285,49 +285,102 @@ function renderAlerts() {
 }
 
 /* ── Stats ── */
+function statMonthKey(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
+
 function renderStats() {
   Object.values(chartInstances).forEach(c=>c&&c.destroy&&c.destroy());
   chartInstances={};
   const recs = HS.getRecords();
-  const critici    = recs.filter(r=>HS.getMinMm(r)<=HS.CRIT_MM).length;
-  const attenzione = recs.filter(r=>{const m=HS.getMinMm(r);return m>HS.CRIT_MM&&m<=HS.WARN_MM;}).length;
-  const ok         = recs.length-critici-attenzione;
 
+  /* — KPI — */
+  const mins = recs.map(r=>HS.getMinMm(r));
+  const critici    = mins.filter(m=>m<=HS.CRIT_MM).length;
+  const attenzione = mins.filter(m=>m>HS.CRIT_MM && m<=HS.WARN_MM).length;
+  const ok         = recs.length - critici - attenzione;
+  const media      = mins.length ? (mins.reduce((s,m)=>s+m,0)/mins.length) : 0;
+  const daRichiamo = critici + attenzione;
+  const deposito   = recs.filter(r=>r.deposito).length;
+  const kpi = $('stats-kpi');
+  if (kpi) kpi.innerHTML = `
+    <div class="stat-card c-cyan"><div class="stat-icon">📏</div><div><div class="stat-val">${media.toFixed(1)}<span style="font-size:13px;color:var(--muted)"> mm</span></div><div class="stat-label">Media minimi flotta</div></div></div>
+    <div class="stat-card c-crit"><div class="stat-icon">🔴</div><div><div class="stat-val">${critici}</div><div class="stat-label">Critici (≤ ${HS.CRIT_MM.toFixed(1)})</div></div></div>
+    <div class="stat-card c-warn"><div class="stat-icon">⚠️</div><div><div class="stat-val">${attenzione}</div><div class="stat-label">In attenzione</div></div></div>
+    <div class="stat-card c-info"><div class="stat-icon">📬</div><div><div class="stat-val">${daRichiamo}</div><div class="stat-label">Da richiamare</div></div></div>
+    <div class="stat-card c-ok"><div class="stat-icon">🏪</div><div><div class="stat-val">${deposito}</div><div class="stat-label">In deposito</div></div></div>`;
+
+  if (!recs.length) return;
+  const axis = { ticks:{color:'#94a3b8'}, grid:{color:'#1a2d4a'} };
+  const axisNo = { ticks:{color:'#94a3b8'}, grid:{display:false} };
+
+  /* 1 — Distribuzione stato */
   chartInstances.stato = new Chart($('ch-stato'),{
     type:'doughnut', data:{
-      labels:['OK','Attenzione','Critico'],
-      datasets:[{data:[ok,attenzione,critici],backgroundColor:['#22c55e','#f97316','#ef4444'],borderWidth:0,hoverOffset:4}]
+      labels:[`OK (${ok})`,`Attenzione (${attenzione})`,`Critico (${critici})`],
+      datasets:[{data:[ok,attenzione,critici],backgroundColor:['#22c55e','#f59e0b','#ef4444'],borderWidth:0,hoverOffset:4}]
     }, options:{responsive:true,maintainAspectRatio:false,cutout:'68%',
       plugins:{legend:{position:'bottom',labels:{color:'#94a3b8',font:{size:11}}}}}
   });
 
-  const dep = recs.filter(r=>r.deposito).length;
-  chartInstances.dep = new Chart($('ch-dep'),{
-    type:'bar', data:{
-      labels:['In deposito','Non in deposito'],
-      datasets:[{data:[dep,recs.length-dep],backgroundColor:['#00d4ff','#1a2d4a'],borderRadius:6,borderWidth:0}]
-    }, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{ticks:{color:'#94a3b8'},grid:{display:false}},y:{ticks:{color:'#94a3b8',stepSize:1},grid:{color:'#1a2d4a'}}}}
+  /* 2 — Istogramma per fascia di profondità: dove si concentra la flotta */
+  const bins = [
+    { label:`≤ ${HS.CRIT_MM.toFixed(1)}`, test:m=>m<=HS.CRIT_MM,            color:'#ef4444' },
+    { label:`${HS.CRIT_MM.toFixed(1)}–${HS.WARN_MM.toFixed(1)}`, test:m=>m>HS.CRIT_MM&&m<=HS.WARN_MM, color:'#f59e0b' },
+    { label:`${HS.WARN_MM.toFixed(1)}–4.5`, test:m=>m>HS.WARN_MM&&m<=4.5,   color:'#a3e635' },
+    { label:'4.5–6',  test:m=>m>4.5&&m<=6,  color:'#22c55e' },
+    { label:'> 6',    test:m=>m>6,          color:'#16a34a' },
+  ];
+  chartInstances.fasce = new Chart($('ch-fasce'),{
+    type:'bar', data:{ labels:bins.map(b=>b.label),
+      datasets:[{data:bins.map(b=>mins.filter(b.test).length),backgroundColor:bins.map(b=>b.color),borderRadius:6,borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:axisNo, y:{...axis, beginAtZero:true, ticks:{...axis.ticks, stepSize:1}}}}
   });
 
-  const sorted = [...recs].sort((a,b)=>HS.parseDate(a.data)-HS.parseDate(b.data));
-  chartInstances.trend = new Chart($('ch-trend'),{
-    type:'line', data:{
-      labels:sorted.map(r=>r.targa),
-      datasets:[{label:'Min mm',data:sorted.map(r=>HS.getMinMm(r)),
-        borderColor:'#00d4ff',backgroundColor:'rgba(0,212,255,.10)',fill:true,tension:.3,
-        pointBackgroundColor:sorted.map(r=>HS.getStatus(HS.getMinMm(r)).color),pointRadius:5}]
-    }, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{ticks:{color:'#94a3b8',maxRotation:45},grid:{display:false}},y:{ticks:{color:'#94a3b8'},grid:{color:'#1a2d4a'},min:0,max:11}}}
+  /* 3 — Priorità richiamo: i 10 veicoli con meno battistrada */
+  const top = recs.map(r=>({t:r.targa, c:r.cliente, m:HS.getMinMm(r)}))
+                  .sort((a,b)=>a.m-b.m).slice(0,10);
+  chartInstances.top = new Chart($('ch-top'),{
+    type:'bar', data:{ labels: top.map(x=>x.t),
+      datasets:[{data:top.map(x=>x.m),
+        backgroundColor:top.map(x=>HS.getStatus(x.m).color), borderRadius:6, borderWidth:0}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:(ctx)=>`${top[ctx.dataIndex].m.toFixed(1)} mm — ${top[ctx.dataIndex].c||''}`}}},
+      scales:{x:{...axis, min:0, max:8, title:{display:true,text:'mm minimi rilevati',color:'#94a3b8',font:{size:10}}}, y:axisNo}}
   });
 
+  /* 4 — Scansioni per mese (ultimi 12): stagionalità del lavoro */
+  const now = new Date(); const labels=[]; const keys=[];
+  for (let i=11;i>=0;i--){ const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    keys.push(statMonthKey(d)); labels.push(d.toLocaleDateString('it-IT',{month:'short',year:'2-digit'})); }
+  const perMese = Object.fromEntries(keys.map(k=>[k,0]));
+  recs.forEach(r=>{ const d=HS.parseDate(r.data); if(d&&d.getFullYear()>2000){ const k=statMonthKey(d); if(k in perMese) perMese[k]++; }});
+  chartInstances.mesi = new Chart($('ch-mesi'),{
+    type:'bar', data:{ labels, datasets:[{data:keys.map(k=>perMese[k]),backgroundColor:'#00d4ff',borderRadius:5,borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{...axisNo, ticks:{...axisNo.ticks, maxRotation:45, font:{size:9}}}, y:{...axis, beginAtZero:true, ticks:{...axis.ticks, stepSize:1}}}}
+  });
+
+  /* 5 — Stagione montata: base per la campagna cambio gomme */
+  const st = { estivo:0, invernale:0, '4stagioni':0, nd:0 };
+  recs.forEach(r=>{ st[r.stagione && st[r.stagione]!==undefined ? r.stagione : 'nd']++; });
+  chartInstances.stagione = new Chart($('ch-stagione'),{
+    type:'doughnut', data:{
+      labels:[`☀️ Estivo (${st.estivo})`,`❄️ Invernale (${st.invernale})`,`🍂 4 Stagioni (${st['4stagioni']})`,`n.d. (${st.nd})`],
+      datasets:[{data:[st.estivo,st.invernale,st['4stagioni'],st.nd],
+        backgroundColor:['#fbbf24','#60a5fa','#a78bfa','#334155'],borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',
+      plugins:{legend:{position:'bottom',labels:{color:'#94a3b8',font:{size:11}}}}}
+  });
+
+  /* 6 — Operatori */
   const ops={};
-  recs.forEach(r=>{ops[r.operatore]=(ops[r.operatore]||0)+1;});
+  recs.forEach(r=>{ops[r.operatore||'—']=(ops[r.operatore||'—']||0)+1;});
   const opK=Object.keys(ops).sort((a,b)=>ops[b]-ops[a]).slice(0,8);
   chartInstances.op = new Chart($('ch-op'),{
     type:'bar', data:{labels:opK, datasets:[{data:opK.map(k=>ops[k]),backgroundColor:'#2563eb',borderRadius:6,borderWidth:0}]},
     options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{ticks:{color:'#94a3b8',stepSize:1},grid:{color:'#1a2d4a'}},y:{ticks:{color:'#94a3b8'},grid:{display:false}}}}
+      scales:{x:{...axis, ticks:{...axis.ticks, stepSize:1}}, y:axisNo}}
   });
 }
 
