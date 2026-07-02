@@ -5,7 +5,7 @@
 'use strict';
 
 /* ── Versione app (aggiornare qui a ogni release) ── */
-const APP_VERSION = '2.4.1';
+const APP_VERSION = '2.5.0';
 
 /* ── State ── */
 let currentView  = 'dashboard';
@@ -161,7 +161,7 @@ function openDetail(id) {
       <div>
         <div class="detail-targa">${HS.escHTML(r.targa)}</div>
         <div class="detail-name">${HS.escHTML(r.cliente)}</div>
-        <div class="detail-meta">${HS.escHTML(r.data)} &nbsp;·&nbsp; Operatore: ${HS.escHTML(r.operatore)}</div>
+        <div class="detail-meta">${HS.escHTML(r.data)} &nbsp;·&nbsp; Operatore: ${HS.escHTML(r.operatore)}${r.stagione ? ` &nbsp;·&nbsp; ${HS.seasonLabel(r.stagione)}` : ''}</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-ghost" onclick="openEdit('${HS.escHTML(r.id)}')">✎ Modifica</button>
@@ -347,7 +347,7 @@ function openEdit(id) {
   showView('form');
   $('form-title').textContent=`Modifica: ${r.targa}`;
   ['targa','data','operatore','cliente','ant_sx_tipo','ant_sx_mm','ant_dx_tipo','ant_dx_mm',
-   'post_sx_tipo','post_sx_mm','post_dx_tipo','post_dx_mm','posizione']
+   'post_sx_tipo','post_sx_mm','post_dx_tipo','post_dx_mm','posizione','stagione']
     .forEach(f=>{ const el=$('f-'+f); if(el) el.value=r[f]??''; });
   $('f-deposito').checked=!!r.deposito;
 }
@@ -365,6 +365,7 @@ function saveForm() {
     post_sx_tipo:g('post_sx_tipo')||'/R',post_sx_mm:parseFloat(g('post_sx_mm'))||0,
     post_dx_tipo:g('post_dx_tipo')||'/R',post_dx_mm:parseFloat(g('post_dx_mm'))||0,
     deposito:$('f-deposito').checked, posizione:g('posizione'),
+    stagione:g('stagione'),
   };
   const recs = HS.getRecords();
   const idx  = recs.findIndex(r=>r.id===editingId);

@@ -287,6 +287,7 @@ function mapPortalHeader(header) {
     operatore: idx(c => c.includes('operatore')),
     cliente:   idx(c => c.includes('cliente')),
     email:     idx(c => c.includes('email') || c.includes('e-mail')),
+    stagione:  idx(c => c.includes('stagion') || c.includes('season')),
     asx: wheel('anteriore sinistro'),
     adx: wheel('anteriore destro'),
     psx: wheel('posteriore sinistro'),
@@ -297,6 +298,31 @@ function mapPortalHeader(header) {
   // valida: servono almeno targa e una ruota
   if (m.targa < 0 || !m.asx) return null;
   return m;
+}
+
+/* ── Stagione pneumatici ──
+   Valori interni: '' | 'estivo' | 'invernale' | '4stagioni'.
+   normSeason: interpreta valori espliciti (colonna "Stagione"/"Season"
+   del portale, se presente). inferSeason: riconosce le marcature nella
+   dicitura della gomma (M+S, 3PMSF, WINTER... → invernale; ALL SEASON,
+   4S... → 4 stagioni).                                                */
+function normSeason(v) {
+  const t = String(v ?? '').toLowerCase();
+  if (!t || t.includes('other')) return '';
+  if (t.includes('winter') || t.includes('invern')) return 'invernale';
+  if (t.includes('all') || t.includes('4') || t.includes('quattro')) return '4stagioni';
+  if (t.includes('summer') || t.includes('estiv')) return 'estivo';
+  return '';
+}
+function inferSeason(tipi) {
+  const t = tipi.filter(Boolean).join(' ').toUpperCase();
+  if (/3PMSF|M\+S|M&S|\bMS\b|WINTER|INVERN/.test(t)) return 'invernale';
+  if (/ALL ?SEASON|4 ?STAGIONI|\b4S\b|QUATTRO/.test(t)) return '4stagioni';
+  if (/SUMMER|ESTIV/.test(t)) return 'estivo';
+  return '';
+}
+function seasonLabel(v) {
+  return { estivo: 'Estivo', invernale: 'Invernale', '4stagioni': '4 Stagioni' }[v] || '';
 }
 
 /* Salva l'email trovata nel file nei contatti richiami della targa
@@ -347,6 +373,7 @@ function importReportRows(rows) {
         post_dx_tipo: pdx.tipo, post_dx_mm: pdx.mm,
         deposito:  g(map.deposito).toLowerCase().startsWith('s') || g(map.deposito).toLowerCase() === 'yes',
         posizione: g(map.posizione),
+        stagione:  normSeason(g(map.stagione)) || inferSeason([asx.tipo, adx.tipo, psx.tipo, pdx.tipo]),
       };
     } else if (isPortale) {
       // header portale trovato ma mappatura fallita: indici storici
@@ -375,6 +402,7 @@ function importReportRows(rows) {
         post_dx_tipo:g(10) || '/R', post_dx_mm: parseFloat(g(11)) || 0,
         deposito:    g(12).toLowerCase().startsWith('s'),
         posizione:   g(13),
+        stagione:    normSeason(g(14)) || inferSeason([g(4), g(6), g(8), g(10)]),
       };
     }
     if (!rec.targa) continue;
@@ -408,12 +436,12 @@ function csvCell(v) {
   return s;
 }
 function exportCSV() {
-  const header = 'Targa,Data,Operatore,Cliente,ANT SX Tipo,ANT SX mm,ANT DX Tipo,ANT DX mm,POST SX Tipo,POST SX mm,POST DX Tipo,POST DX mm,Deposito,Posizione';
+  const header = 'Targa,Data,Operatore,Cliente,ANT SX Tipo,ANT SX mm,ANT DX Tipo,ANT DX mm,POST SX Tipo,POST SX mm,POST DX Tipo,POST DX mm,Deposito,Posizione,Stagione';
   const rows   = records.map(r =>
     [r.targa, r.data, r.operatore, r.cliente,
      r.ant_sx_tipo, r.ant_sx_mm, r.ant_dx_tipo, r.ant_dx_mm,
      r.post_sx_tipo, r.post_sx_mm, r.post_dx_tipo, r.post_dx_mm,
-     r.deposito ? 'Sì' : 'No', r.posizione].map(csvCell).join(',')
+     r.deposito ? 'Sì' : 'No', r.posizione, seasonLabel(r.stagione)].map(csvCell).join(',')
   );
   const blob = new Blob([header+'\n'+rows.join('\n')], {type:'text/csv;charset=utf-8;'});
   const url  = URL.createObjectURL(blob);
@@ -449,6 +477,7 @@ Object.assign(window.HS, {
   resetAll,
   isFirstLaunch, showWelcomeScreen,
   uid, getMinMm, getStatus, mmClass, parseDate, escHTML, escJS, todayStr,
+  normSeason, inferSeason, seasonLabel,
   WARN_MM, CRIT_MM,
   getRecords: () => records,
   setRecords: (r) => { records = r; saveData(); },

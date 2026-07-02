@@ -118,6 +118,7 @@ function buildTireReport(r) {
         <div class="tr-head-targa">${HS.escHTML(r.targa)}</div>
         <div><em>Cliente:</em> ${HS.escHTML(r.cliente || '—')}</div>
         <div><em>Data controllo:</em> ${HS.escHTML(r.data || '—')} · <em>Operatore:</em> ${HS.escHTML(r.operatore || '—')}</div>
+        ${r.stagione ? `<div><em>Pneumatici:</em> ${HS.seasonLabel(r.stagione)}</div>` : ''}
         ${email || tel ? `<div>${email ? HS.escHTML(email) : ''}${email && tel ? ' · ' : ''}${tel ? HS.escHTML(tel) : ''}</div>` : ''}
       </div>
     </div>
