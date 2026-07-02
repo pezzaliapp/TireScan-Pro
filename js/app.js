@@ -5,7 +5,9 @@
 'use strict';
 
 /* ── Versione app (aggiornare qui a ogni release) ── */
-const APP_VERSION = '2.7.1';
+const APP_VERSION = '2.7.2';
+/* Indirizzo per segnalazioni bug/proposte (mostrato nel pannello ℹ️) */
+const FEEDBACK_EMAIL = 'a.pezzali@cormachsrl.com';
 
 /* ── State ── */
 let currentView  = 'dashboard';
@@ -523,9 +525,14 @@ function showAppInfo() {
       <div><strong>Privacy.</strong> Tutti i dati restano esclusivamente su questo dispositivo:
         nessun server, nessuna registrazione, nessun tracciamento. Fai backup periodici con ⬇ Esporta.</div>
 
-      <div><strong>Bug e proposte.</strong> È un progetto indipendente e gratuito, nato con la speranza
-        di portare un valore in più a chi usa Handy Scan: segnala errori o richieste migliorative su
-        <strong>github.com/pezzaliapp/TireScan-Pro</strong> (sezione Issues) — ogni feedback aiuta.</div>
+      <div><strong>Hai trovato un errore o hai un'idea?</strong> Questa è un'app indipendente e
+        gratuita, nata con la speranza di portare un valore in più a chi usa Handy Scan: ogni
+        segnalazione aiuta a migliorarla per tutti.
+        <div style="margin-top:8px">
+          <a class="btn btn-primary btn-sm" href="mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent('HandyScan PWA v' + APP_VERSION + ' — segnalazione')}&body=${encodeURIComponent('Descrivi qui il problema o la proposta:\n\n\nCosa stavi facendo quando è successo:\n\n')}">
+            📧 Scrivi una segnalazione</a>
+          <span style="font-size:11px;color:var(--muted);margin-left:8px">${FEEDBACK_EMAIL}</span>
+        </div></div>
 
       <div style="background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;font-size:12px">
         <strong>⚠️ Limitazione di responsabilità.</strong> Software fornito "così com'è", senza garanzie.

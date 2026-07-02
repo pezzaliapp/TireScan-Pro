@@ -252,9 +252,13 @@ Il portale genera i report certificati; questa app leggera aggiunge la **gestion
 ## 🐞 Bug e richieste
 
 Progetto **indipendente e gratuito**, nato con la speranza di portare un valore in più a chi usa
-Handy Scan. Segnala errori o proposte migliorative nelle
-[**Issues su GitHub**](https://github.com/pezzaliapp/TireScan-Pro/issues): ogni feedback aiuta a
-migliorare l'app per tutti.
+Handy Scan. Segnala errori o proposte migliorative:
+
+- 📧 **via email** (il canale più semplice): dal pulsante **ℹ️** dentro l'app c'è "Scrivi una
+  segnalazione" che apre un messaggio già precompilato
+- 🐞 oppure, per chi ha dimestichezza, nelle [Issues su GitHub](https://github.com/pezzaliapp/TireScan-Pro/issues)
+
+Ogni feedback aiuta a migliorare l'app per tutti.
 
 ## ⚠️ Disclaimer e limitazione di responsabilità
 
