@@ -5,7 +5,7 @@
 'use strict';
 
 /* ── Versione app (aggiornare qui a ogni release) ── */
-const APP_VERSION = '2.4.0';
+const APP_VERSION = '2.4.1';
 
 /* ── State ── */
 let currentView  = 'dashboard';

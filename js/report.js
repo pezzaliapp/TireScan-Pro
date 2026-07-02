@@ -17,34 +17,33 @@ function trOfficina() {
   } catch { return { nome: 'La tua officina', firma: '' }; }
 }
 
-/* ── Palette stato (stampa su bianco) ── */
+/* ── Palette stato (stampa su bianco) ──
+   col = testo/icone (più scuro per leggibilità), fill = riempimenti  */
 function trTone(mm) {
-  if (mm <= HS.CRIT_MM) return { col: '#c62828', bg: '#fdecea', label: 'CRITICO' };
-  if (mm <= HS.WARN_MM) return { col: '#e65100', bg: '#fff3e0', label: 'ATTENZIONE' };
-  return { col: '#2e7d32', bg: '#e8f5e9', label: 'OK' };
+  if (mm <= HS.CRIT_MM) return { col: '#d32f2f', fill: '#d32f2f', bg: '#fdecea', label: 'CRITICO' };
+  if (mm <= HS.WARN_MM) return { col: '#d97706', fill: '#f59e0b', bg: '#fef3e0', label: 'ATTENZIONE' };
+  return                       { col: '#2e7d32', fill: '#2e7d32', bg: '#e8f5e9', label: 'OK' };
 }
 
-/* ── Barra di profondità 0–8 mm ── */
+/* ── Barra di profondità 0–8 mm ──
+   Lettura immediata: più barra colorata = più gomma. Binario grigio,
+   riempimento nel colore dello stato, soglie tratteggiate etichettate
+   (1.6 = limite legale in rosso, 3.0 = attenzione in ambra).          */
 function trGauge(mm) {
   const W = 320, scale = W / 8;
   const x = v => Math.round(v * scale * 10) / 10;
   const val = Math.max(0, Math.min(8, Number(mm) || 0));
   const t = trTone(val);
-  return `<svg viewBox="0 0 ${W} 46" class="tr-gauge" role="img" aria-label="${val.toFixed(1)} mm su scala 8 mm">
-    <rect x="0" y="20" width="${x(HS.CRIT_MM)}" height="10" rx="5" fill="#f5c6c6"/>
-    <rect x="${x(HS.CRIT_MM)}" y="20" width="${x(HS.WARN_MM) - x(HS.CRIT_MM)}" height="10" fill="#fadfb8"/>
-    <rect x="${x(HS.WARN_MM)}" y="20" width="${W - x(HS.WARN_MM)}" height="10" fill="#c8e6c9"/>
-    <rect x="${W - 6}" y="20" width="6" height="10" rx="3" fill="#c8e6c9"/>
-    ${val > 0 ? `<rect x="0" y="20" width="${x(val)}" height="10" rx="5" fill="${t.col}"/>` : ''}
-    <path d="M${x(val)},18 l-5,-8 l10,0 Z" fill="#263238"/>
-    <line x1="${x(val)}" y1="18" x2="${x(val)}" y2="32" stroke="#263238" stroke-width="2"/>
-    <line x1="${x(HS.CRIT_MM)}" y1="20" x2="${x(HS.CRIT_MM)}" y2="30" stroke="#fff" stroke-width="1.5"/>
-    <line x1="${x(HS.WARN_MM)}" y1="20" x2="${x(HS.WARN_MM)}" y2="30" stroke="#fff" stroke-width="1.5"/>
+  return `<svg viewBox="0 0 ${W} 56" class="tr-gauge" role="img" aria-label="${val.toFixed(1)} mm su scala 8 mm">
+    <rect x="0" y="22" width="${W}" height="12" rx="6" fill="#eceff1"/>
+    ${val > 0 ? `<rect x="0" y="22" width="${Math.max(x(val), 12)}" height="12" rx="6" fill="${t.fill}"/>` : ''}
+    <line x1="${x(HS.CRIT_MM)}" y1="16" x2="${x(HS.CRIT_MM)}" y2="40" stroke="#d32f2f" stroke-width="2" stroke-dasharray="3,2"/>
+    <line x1="${x(HS.WARN_MM)}" y1="16" x2="${x(HS.WARN_MM)}" y2="40" stroke="#f59e0b" stroke-width="2" stroke-dasharray="3,2"/>
     <g font-size="9" fill="#78909c">
-      <text x="0" y="44">0</text>
-      <text x="${x(HS.CRIT_MM)}" y="44" text-anchor="middle">${HS.CRIT_MM.toFixed(1)}</text>
-      <text x="${x(HS.WARN_MM)}" y="44" text-anchor="middle">${HS.WARN_MM.toFixed(1)}</text>
-      <text x="${W}" y="44" text-anchor="end">8 mm</text>
+      <text x="${x(HS.CRIT_MM)}" y="12" text-anchor="middle" fill="#d32f2f">${HS.CRIT_MM.toFixed(1)} limite</text>
+      <text x="${x(HS.WARN_MM) + 12}" y="12" text-anchor="middle" fill="#c77700">${HS.WARN_MM.toFixed(1)}</text>
+      <text x="0" y="52">0</text>
+      <text x="${W}" y="52" text-anchor="end">8 mm</text>
     </g>
   </svg>`;
 }
@@ -92,7 +91,7 @@ function trSummary(r) {
       ? 'Usura in zona di attenzione: pianificare il controllo o la sostituzione a breve.'
       : 'Pneumatici in buono stato alla data del controllo.';
   return `<div class="tr-summary" style="border-color:${t.col}">
-    <div class="tr-summary-badge" style="background:${t.col}">${t.label}</div>
+    <div class="tr-summary-badge" style="background:${t.fill}">${t.label}</div>
     <div>
       <div class="tr-summary-min">Profondità minima rilevata: <b style="color:${t.col}">${min.toFixed(1)} mm</b></div>
       <div class="tr-summary-msg">${msg}</div>
@@ -133,8 +132,8 @@ function buildTireReport(r) {
     </div>
 
     <div class="tr-legend">
-      <div><span class="tr-dot" style="background:#c62828"></span> Critico ≤ ${HS.CRIT_MM.toFixed(1)} mm (limite legale)</div>
-      <div><span class="tr-dot" style="background:#e65100"></span> Attenzione ${HS.CRIT_MM.toFixed(1)}–${HS.WARN_MM.toFixed(1)} mm</div>
+      <div><span class="tr-dot" style="background:#d32f2f"></span> Critico ≤ ${HS.CRIT_MM.toFixed(1)} mm (limite legale)</div>
+      <div><span class="tr-dot" style="background:#f59e0b"></span> Attenzione ${HS.CRIT_MM.toFixed(1)}–${HS.WARN_MM.toFixed(1)} mm</div>
       <div><span class="tr-dot" style="background:#2e7d32"></span> OK &gt; ${HS.WARN_MM.toFixed(1)} mm</div>
     </div>
 
