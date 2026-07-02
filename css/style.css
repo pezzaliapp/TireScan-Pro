@@ -672,64 +672,74 @@ td { padding: 11px 14px; vertical-align: middle; }
   .cal-title { min-width: 130px; font-size: 14px; }
 }
 
-/* ═══════════════ SCHEDA REPORT PNEUMATICI (report.js) ═══════════════ */
+/* ═══════════════ SCHEDA REPORT PNEUMATICI (report.js v2) ═══════════════ */
 #tire-report-overlay {
   position: fixed; inset: 0; z-index: 998; overflow-y: auto;
   background: rgba(0,0,0,.65); padding: 18px;
 }
-.tr-toolbar {
-  max-width: 860px; margin: 0 auto 10px; display: flex; gap: 8px;
-  justify-content: flex-end;
-}
+.tr-toolbar { max-width: 900px; margin: 0 auto 10px; display: flex; gap: 8px; justify-content: flex-end; }
 .tr-sheet {
-  max-width: 860px; margin: 0 auto 30px; background: #fff; color: #111;
-  border-radius: 10px; padding: 30px 36px;
-  font-family: Arial, Helvetica, sans-serif; font-size: 13px;
+  max-width: 900px; margin: 0 auto 30px; background: #fff; color: #263238;
+  border-radius: 10px; padding: 34px 40px;
+  font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 13px;
   box-shadow: 0 12px 40px rgba(0,0,0,.4);
 }
-.tr-sheet em { font-style: italic; color: #444; }
-.tr-head { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 18px; }
-.tr-logo { font-size: 44px; line-height: 1; }
-.tr-brand { font-size: 20px; font-weight: 800; color: #b02a2a; letter-spacing: .3px; }
-.tr-brand-sub { font-size: 11px; color: #666; }
-.tr-head-right { margin-left: auto; text-align: right; font-size: 12px; display: flex; flex-direction: column; gap: 2px; }
-.tr-section {
-  background: #d9d9d9; text-align: center; font-weight: 700; font-size: 14px;
-  padding: 4px; margin: 14px 0 8px; border-radius: 2px;
+.tr-sheet em { font-style: normal; color: #78909c; }
+.tr-head {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;
+  border-bottom: 3px solid #263238; padding-bottom: 16px; margin-bottom: 18px;
 }
-.tr-veicolo { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; margin-bottom: 6px; }
-.tr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; margin-top: 10px; }
-.tr-wheel { border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
-.tr-wheel-head { background: #d9d9d9; text-align: center; font-weight: 700; padding: 3px; font-size: 13px; }
-.tr-wheel-body { display: flex; justify-content: space-between; padding: 8px 10px 0; gap: 8px; }
-.tr-wheel-info { display: flex; flex-direction: column; gap: 2px; font-size: 12px; }
-.tr-wheel-side { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
-.tr-media { background: #ffe94d; padding: 2px 10px; font-size: 12px; border-radius: 2px; white-space: nowrap; }
-.tr-media b { font-size: 14px; }
-.tr-tire { width: 100%; height: auto; display: block; padding: 4px 10px 8px; box-sizing: border-box; }
-.tr-ico {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 20px; height: 20px; border-radius: 50%; color: #fff;
-  font-weight: 900; font-size: 12px; line-height: 1;
+.tr-brand { font-size: 24px; font-weight: 800; letter-spacing: -.3px; color: #263238; }
+.tr-brand-sub { font-size: 12px; color: #78909c; margin-top: 2px; }
+.tr-head-box { text-align: right; font-size: 12px; display: flex; flex-direction: column; gap: 3px; }
+.tr-head-targa {
+  font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 22px; font-weight: 700;
+  letter-spacing: 2px; color: #263238; border: 2px solid #263238; border-radius: 6px;
+  padding: 2px 12px; align-self: flex-end; margin-bottom: 4px;
 }
-.tr-ico-crit { background: #d92b2b; }
-.tr-ico-warn { background: #e07b00; }
-.tr-ico-ok   { background: #1a8f3c; }
+.tr-summary {
+  display: flex; align-items: center; gap: 14px;
+  border: 1px solid; border-left-width: 6px; border-radius: 8px;
+  padding: 12px 16px; margin-bottom: 18px; background: #fafafa;
+}
+.tr-summary-badge {
+  color: #fff; font-weight: 800; font-size: 12px; letter-spacing: 1px;
+  padding: 6px 14px; border-radius: 20px; white-space: nowrap;
+}
+.tr-summary-min { font-size: 14px; }
+.tr-summary-msg { font-size: 12px; color: #546e7a; margin-top: 2px; }
+.tr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
+.tr-wheel { border: 1px solid #e0e0e0; border-radius: 8px; padding: 14px 16px; }
+.tr-wheel-row { display: flex; gap: 14px; align-items: flex-start; }
+.tr-minicar { width: 32px; height: 48px; flex: none; margin-top: 2px; }
+.tr-wheel-main { flex: 1; min-width: 0; }
+.tr-wheel-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.tr-pos {
+  font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #546e7a;
+}
+.tr-chip { font-size: 10px; font-weight: 800; letter-spacing: .5px; padding: 3px 10px; border-radius: 12px; }
+.tr-val { font-size: 30px; font-weight: 800; line-height: 1.15; margin: 2px 0 4px; }
+.tr-val span { font-size: 13px; font-weight: 400; color: #78909c; }
+.tr-gauge { width: 100%; max-width: 340px; height: auto; display: block; }
+.tr-dim { font-size: 11px; color: #90a4ae; margin-top: 6px; }
 .tr-legend {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px;
-  border-top: 1px solid #999; margin-top: 18px; padding-top: 12px; font-size: 12px;
+  display: flex; flex-wrap: wrap; gap: 8px 26px;
+  border-top: 1px solid #e0e0e0; margin-top: 18px; padding-top: 12px; font-size: 12px; color: #546e7a;
 }
-.tr-legend > div { display: flex; align-items: center; gap: 8px; }
-.tr-deposito { border-top: 1px solid #999; margin-top: 12px; padding-top: 10px; font-size: 13px; }
+.tr-legend > div { display: flex; align-items: center; gap: 7px; }
+.tr-dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+.tr-deposito { border-top: 1px solid #e0e0e0; margin-top: 12px; padding-top: 10px; font-size: 13px; }
 .tr-check { font-size: 17px; }
 .tr-footer {
-  border-top: 1px solid #999; margin-top: 14px; padding-top: 8px;
-  font-size: 10px; color: #777; text-align: center;
+  border-top: 1px solid #e0e0e0; margin-top: 14px; padding-top: 10px;
+  font-size: 10px; color: #90a4ae; line-height: 1.5;
 }
 @media (max-width: 640px) {
-  .tr-sheet { padding: 18px; }
-  .tr-grid, .tr-veicolo, .tr-legend { grid-template-columns: 1fr; }
-  .tr-head-right { text-align: left; }
+  .tr-sheet { padding: 20px; }
+  .tr-grid { grid-template-columns: 1fr; }
+  .tr-head { flex-direction: column; }
+  .tr-head-box { text-align: left; }
+  .tr-head-targa { align-self: flex-start; }
 }
 /* ── Stampa: mostra SOLO la scheda ── */
 @media print {
@@ -738,7 +748,7 @@ td { padding: 11px 14px; vertical-align: middle; }
   #tire-report-overlay { position: static; background: #fff; padding: 0; overflow: visible; }
   .tr-noprint { display: none !important; }
   .tr-sheet { box-shadow: none; border-radius: 0; max-width: none; margin: 0; padding: 0; }
-  .tr-grid { break-inside: avoid; }
+  .tr-grid, .tr-summary { break-inside: avoid; }
 }
 
 /* ── Badge versione app ── */

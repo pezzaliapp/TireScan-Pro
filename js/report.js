@@ -1,9 +1,9 @@
 /* ================================================================
-   HandyScan  |  js/report.js  — Scheda Report Pneumatici v1.0
-   Genera una scheda per veicolo ispirata al CarReport del portale
-   Cormach: 4 quadranti gomma con grafica battistrada, fascia rossa
-   di usura, valore medio evidenziato, legenda e riquadro deposito.
-   Ottimizzata per la stampa (A4) e il salvataggio in PDF.
+   HandyScan  |  js/report.js  — Scheda Report Pneumatici v2.0
+   Design "rapporto tecnico": per ogni ruota una barra di profondità
+   su scala 0–8 mm con zone critico/attenzione/OK, indicatore sul
+   valore misurato, mini-schema del veicolo con la ruota evidenziata,
+   sintesi con raccomandazione. Ottimizzata per stampa A4 / PDF.
    NOTA: non sostituisce il report ufficiale HandyScan Manager.
    Open Source — github.com/pezzaliapp/TireScan-Pro
    ================================================================ */
@@ -17,76 +17,86 @@ function trOfficina() {
   } catch { return { nome: 'La tua officina', firma: '' }; }
 }
 
-/* ── Grafica battistrada SVG (v2) ──
-   Battistrada realistico: 5 coste con lamelle, 4 scanalature, spalle
-   in ombra. La tinta di usura compare SOLO sotto soglia (ambra per
-   attenzione, rossa per critico) e la sua altezza cresce con l'usura;
-   una gomma in buono stato resta pulita, come nel report ufficiale.
-   NB: il portale esporta un solo valore per gomma (il minimo), quindi
-   la tinta copre la fascia superiore dell'intero battistrada e non le
-   singole scanalature come nel CarReport del profilometro.           */
-function trTireSVG(mm) {
-  const val  = Number.isFinite(Number(mm)) ? Number(mm) : 0;
-  const crit = val <= HS.CRIT_MM, warn = !crit && val <= HS.WARN_MM;
-  const tcol = crit ? '#d93025' : '#f0a020';
-  const wear = Math.max(0, Math.min(1, 1 - val / 8));
-  const overlayH = (crit || warn) ? Math.max(9, Math.round(46 * wear)) : 0;
-  const vcol = crit ? '#d93025' : warn ? '#e07b00' : '#1a8f3c';
-  const uid  = 'tr' + Math.random().toString(36).slice(2, 8);
-  const body = 'M10,118 C10,78 18,50 46,40 C80,30 196,30 230,40 C258,50 266,78 266,118 Z';
+/* ── Palette stato (stampa su bianco) ── */
+function trTone(mm) {
+  if (mm <= HS.CRIT_MM) return { col: '#c62828', bg: '#fdecea', label: 'CRITICO' };
+  if (mm <= HS.WARN_MM) return { col: '#e65100', bg: '#fff3e0', label: 'ATTENZIONE' };
+  return { col: '#2e7d32', bg: '#e8f5e9', label: 'OK' };
+}
 
-  const grooves = [74, 116, 158, 200].map(g =>
-    `<rect x="${g}" y="36" width="10" height="82" rx="3" fill="#151515"/>` +
-    `<rect x="${g + 2}" y="36" width="3" height="82" fill="#0b0b0b"/>`).join('');
-
-  let sipes = '';
-  [[24, 74], [84, 116], [126, 158], [168, 200], [210, 252]].forEach(([x1, x2]) => {
-    for (let y = 50; y < 112; y += 12)
-      sipes += `<path d="M${x1 + 3},${y} Q${(x1 + x2) / 2},${y + 2.5} ${x2 - 3},${y}" stroke="#232323" stroke-width="1.5" fill="none" opacity=".85"/>`;
-  });
-
-  const overlay = overlayH
-    ? `<rect x="10" y="30" width="256" height="${overlayH}" fill="${tcol}" opacity=".7"/>` : '';
-
-  return `<svg viewBox="0 0 276 130" class="tr-tire" role="img" aria-label="${val.toFixed(1)} mm">
-    <defs>
-      <linearGradient id="g${uid}" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#808080"/><stop offset=".4" stop-color="#4e4e4e"/><stop offset="1" stop-color="#282828"/>
-      </linearGradient>
-      <clipPath id="c${uid}"><path d="${body}"/></clipPath>
-    </defs>
-    <text x="138" y="16" text-anchor="middle" font-size="15" font-weight="700" fill="${vcol}">${val.toFixed(1)}</text>
-    <path d="${body}" fill="url(#g${uid})" stroke="#1a1a1a" stroke-width="2"/>
-    <g clip-path="url(#c${uid})">
-      <path d="M10,118 C10,78 18,50 46,40" stroke="#909090" stroke-width="8" fill="none" opacity=".45"/>
-      <path d="M230,40 C258,50 266,78 266,118" stroke="#141414" stroke-width="10" fill="none" opacity=".5"/>
-      ${grooves}${sipes}${overlay}
+/* ── Barra di profondità 0–8 mm ── */
+function trGauge(mm) {
+  const W = 320, scale = W / 8;
+  const x = v => Math.round(v * scale * 10) / 10;
+  const val = Math.max(0, Math.min(8, Number(mm) || 0));
+  const t = trTone(val);
+  return `<svg viewBox="0 0 ${W} 46" class="tr-gauge" role="img" aria-label="${val.toFixed(1)} mm su scala 8 mm">
+    <rect x="0" y="20" width="${x(HS.CRIT_MM)}" height="10" rx="5" fill="#f5c6c6"/>
+    <rect x="${x(HS.CRIT_MM)}" y="20" width="${x(HS.WARN_MM) - x(HS.CRIT_MM)}" height="10" fill="#fadfb8"/>
+    <rect x="${x(HS.WARN_MM)}" y="20" width="${W - x(HS.WARN_MM)}" height="10" fill="#c8e6c9"/>
+    <rect x="${W - 6}" y="20" width="6" height="10" rx="3" fill="#c8e6c9"/>
+    ${val > 0 ? `<rect x="0" y="20" width="${x(val)}" height="10" rx="5" fill="${t.col}"/>` : ''}
+    <path d="M${x(val)},18 l-5,-8 l10,0 Z" fill="#263238"/>
+    <line x1="${x(val)}" y1="18" x2="${x(val)}" y2="32" stroke="#263238" stroke-width="2"/>
+    <line x1="${x(HS.CRIT_MM)}" y1="20" x2="${x(HS.CRIT_MM)}" y2="30" stroke="#fff" stroke-width="1.5"/>
+    <line x1="${x(HS.WARN_MM)}" y1="20" x2="${x(HS.WARN_MM)}" y2="30" stroke="#fff" stroke-width="1.5"/>
+    <g font-size="9" fill="#78909c">
+      <text x="0" y="44">0</text>
+      <text x="${x(HS.CRIT_MM)}" y="44" text-anchor="middle">${HS.CRIT_MM.toFixed(1)}</text>
+      <text x="${x(HS.WARN_MM)}" y="44" text-anchor="middle">${HS.WARN_MM.toFixed(1)}</text>
+      <text x="${W}" y="44" text-anchor="end">8 mm</text>
     </g>
   </svg>`;
 }
 
-function trStatusIcon(mm) {
-  if (mm <= HS.CRIT_MM) return '<span class="tr-ico tr-ico-crit">✕</span>';
-  if (mm <= HS.WARN_MM) return '<span class="tr-ico tr-ico-warn">!</span>';
-  return '<span class="tr-ico tr-ico-ok">✓</span>';
+/* ── Mini-schema veicolo (vista dall'alto) con ruota evidenziata ──
+   pos: 0=Ant SX  1=Ant DX  2=Post SX  3=Post DX                     */
+function trMiniCar(pos, col) {
+  const P = [[3, 6], [23, 6], [3, 30], [23, 30]];
+  const wheels = P.map(([px, py], i) =>
+    `<rect x="${px}" y="${py}" width="6" height="12" rx="2" fill="${i === pos ? col : '#cfd8dc'}"/>`).join('');
+  return `<svg viewBox="0 0 32 48" class="tr-minicar" aria-hidden="true">
+    <rect x="8" y="4" width="16" height="40" rx="7" fill="none" stroke="#90a4ae" stroke-width="1.6"/>
+    <line x1="10" y1="18" x2="22" y2="18" stroke="#cfd8dc" stroke-width="1.2"/>
+    ${wheels}
+  </svg>`;
 }
 
-function trWheel(title, tipo, mm) {
+/* ── Card ruota ── */
+function trWheel(title, tipo, mm, pos) {
   const val = Number.isFinite(Number(mm)) ? Number(mm) : 0;
+  const t = trTone(val);
   return `<div class="tr-wheel">
-    <div class="tr-wheel-head">${HS.escHTML(title)}</div>
-    <div class="tr-wheel-body">
-      <div class="tr-wheel-info">
-        <div><em>Marca:</em> <span>—</span></div>
-        <div><em>Dimensioni:</em> <span>${HS.escHTML(tipo && tipo !== '/R' ? tipo : '/R')}</span></div>
-        <div><em>Stagione:</em> <span>—</span></div>
-      </div>
-      <div class="tr-wheel-side">
-        ${trStatusIcon(val)}
-        <div class="tr-media">Media: <b>${val.toFixed(1)}</b></div>
+    <div class="tr-wheel-row">
+      ${trMiniCar(pos, t.col)}
+      <div class="tr-wheel-main">
+        <div class="tr-wheel-head">
+          <span class="tr-pos">${HS.escHTML(title)}</span>
+          <span class="tr-chip" style="color:${t.col};background:${t.bg}">${t.label}</span>
+        </div>
+        <div class="tr-val" style="color:${t.col}">${val.toFixed(1)}<span> mm</span></div>
+        ${trGauge(val)}
+        <div class="tr-dim">Dimensioni: ${HS.escHTML(tipo && tipo !== '/R' ? tipo : '—')}</div>
       </div>
     </div>
-    ${trTireSVG(val)}
+  </div>`;
+}
+
+/* ── Sintesi complessiva ── */
+function trSummary(r) {
+  const min = HS.getMinMm(r);
+  const t = trTone(min);
+  const msg = min <= HS.CRIT_MM
+    ? 'Almeno un pneumatico è sotto il limite legale di ' + HS.CRIT_MM.toFixed(1) + ' mm: sostituzione immediata consigliata.'
+    : min <= HS.WARN_MM
+      ? 'Usura in zona di attenzione: pianificare il controllo o la sostituzione a breve.'
+      : 'Pneumatici in buono stato alla data del controllo.';
+  return `<div class="tr-summary" style="border-color:${t.col}">
+    <div class="tr-summary-badge" style="background:${t.col}">${t.label}</div>
+    <div>
+      <div class="tr-summary-min">Profondità minima rilevata: <b style="color:${t.col}">${min.toFixed(1)} mm</b></div>
+      <div class="tr-summary-msg">${msg}</div>
+    </div>
   </div>`;
 }
 
@@ -100,40 +110,32 @@ function buildTireReport(r) {
 
   return `<div class="tr-sheet" id="tire-report">
     <div class="tr-head">
-      <div class="tr-logo">🛞</div>
       <div>
         <div class="tr-brand">${HS.escHTML(off.nome)}</div>
-        <div class="tr-brand-sub">Servizio pneumatici · controllo battistrada</div>
+        <div class="tr-brand-sub">Rapporto controllo pneumatici</div>
         ${off.firma ? `<div class="tr-brand-sub">${HS.escHTML(off.firma)}</div>` : ''}
       </div>
-      <div class="tr-head-right">
+      <div class="tr-head-box">
+        <div class="tr-head-targa">${HS.escHTML(r.targa)}</div>
         <div><em>Cliente:</em> ${HS.escHTML(r.cliente || '—')}</div>
-        ${email ? `<div><em>Email:</em> ${HS.escHTML(email)}</div>` : ''}
-        ${tel ? `<div><em>Tel:</em> ${HS.escHTML(tel)}</div>` : ''}
+        <div><em>Data controllo:</em> ${HS.escHTML(r.data || '—')} · <em>Operatore:</em> ${HS.escHTML(r.operatore || '—')}</div>
+        ${email || tel ? `<div>${email ? HS.escHTML(email) : ''}${email && tel ? ' · ' : ''}${tel ? HS.escHTML(tel) : ''}</div>` : ''}
       </div>
     </div>
 
-    <div class="tr-section">Veicolo</div>
-    <div class="tr-veicolo">
-      <div><em>Data controllo:</em> ${HS.escHTML(r.data || '—')}</div>
-      <div><em>Operatore:</em> ${HS.escHTML(r.operatore || '—')}</div>
-      <div><em>Targa:</em> <b>${HS.escHTML(r.targa)}</b></div>
-      <div><em>Stampato il:</em> ${HS.escHTML(oggi)}</div>
-    </div>
+    ${trSummary(r)}
 
     <div class="tr-grid">
-      ${trWheel('Anteriore sinistro',  r.ant_sx_tipo,  r.ant_sx_mm)}
-      ${trWheel('Anteriore destro',    r.ant_dx_tipo,  r.ant_dx_mm)}
-      ${trWheel('Posteriore sinistro', r.post_sx_tipo, r.post_sx_mm)}
-      ${trWheel('Posteriore destro',   r.post_dx_tipo, r.post_dx_mm)}
+      ${trWheel('Anteriore sinistro',  r.ant_sx_tipo,  r.ant_sx_mm,  0)}
+      ${trWheel('Anteriore destro',    r.ant_dx_tipo,  r.ant_dx_mm,  1)}
+      ${trWheel('Posteriore sinistro', r.post_sx_tipo, r.post_sx_mm, 2)}
+      ${trWheel('Posteriore destro',   r.post_dx_tipo, r.post_dx_mm, 3)}
     </div>
 
-    <div class="tr-note">La grafica evidenzia l'usura complessiva della gomma (valore minimo rilevato). Le misure delle singole scanalature sono disponibili nel report del portale Cormach.</div>
-
     <div class="tr-legend">
-      <div><span class="tr-ico tr-ico-crit">✕</span> Usura critica (≤ ${HS.CRIT_MM.toFixed(1)} mm — limite legale)</div>
-      <div><span class="tr-ico tr-ico-warn">!</span> Usura di attenzione (≤ ${HS.WARN_MM.toFixed(1)} mm)</div>
-      <div><span class="tr-ico tr-ico-ok">✓</span> Profondità normale</div>
+      <div><span class="tr-dot" style="background:#c62828"></span> Critico ≤ ${HS.CRIT_MM.toFixed(1)} mm (limite legale)</div>
+      <div><span class="tr-dot" style="background:#e65100"></span> Attenzione ${HS.CRIT_MM.toFixed(1)}–${HS.WARN_MM.toFixed(1)} mm</div>
+      <div><span class="tr-dot" style="background:#2e7d32"></span> OK &gt; ${HS.WARN_MM.toFixed(1)} mm</div>
     </div>
 
     <div class="tr-deposito">
@@ -142,8 +144,9 @@ function buildTireReport(r) {
     </div>
 
     <div class="tr-footer">
-      Documento generato con HandyScan PWA (open source) a scopo informativo per il cliente.
-      Non sostituisce il report ufficiale del portale Cormach / HandyScan Manager.
+      Stampato il ${HS.escHTML(oggi)} · Documento generato con HandyScan PWA (open source) a scopo informativo:
+      riporta il valore minimo rilevato per gomma. Le misure per singola scanalatura e il report certificato
+      sono disponibili nel portale Cormach / HandyScan Manager.
     </div>
   </div>`;
 }
