@@ -191,7 +191,10 @@ Soglie configurabili in `js/data.js` (costanti `WARN_MM` e `CRIT_MM`).
 ## 📄 Licenza
 
 MIT — Libero uso, modifica e distribuzione.
-Creato per i clienti **Handy Scan – Cormach Srl**, Correggio (RE)
+Progetto **indipendente**, pensato per le officine che utilizzano il profilometro Handy Scan.
+«Handy Scan», «TireApp» e «Cormach» sono marchi dei rispettivi proprietari: il loro uso in questo
+progetto è puramente descrittivo (compatibilità) e **non implica alcuna affiliazione, sponsorizzazione
+o approvazione** da parte di Cormach Srl.
 
 ---
 
