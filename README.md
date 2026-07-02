@@ -50,6 +50,7 @@ handyscan-pwa/
 | 📤 **Calendario condivisibile** | Export `.ics` (singolo evento o agenda completa, RFC 5545 con fuso Europe/Rome), condivisione via Web Share API, link diretti Google Calendar e Outlook |
 | ⬇ **Export CSV** | Esporta tutti i dati in CSV compatibile Excel |
 | 🖨 **Stampa** | Scheda cliente ottimizzata per stampa/PDF |
+| 📄 **Report pneumatici** | Scheda per veicolo in stile CarReport: 4 quadranti gomma con grafica battistrada e usura, valore medio, legenda, deposito — stampabile/salvabile in PDF (non sostituisce il report ufficiale del portale) |
 | 📲 **Installabile** | PWA: si installa su iOS, Android, PC come app nativa |
 | 🌐 **Offline** | Funziona senza rete dopo il primo caricamento |
 
@@ -212,3 +213,8 @@ Creato per i clienti **Handy Scan – Cormach Srl**, Correggio (RE)
 - Export CSV con quoting RFC 4180 (virgole/virgolette nei nomi cliente non corrompono più le colonne) e protezione da formula injection in Excel
 - Service worker: fallback a `index.html` solo per le navigazioni (prima poteva restituire HTML al posto di CSS/JS falliti); cache bump `v6`
 - `RC.init()` protetto da guard come gli altri moduli (l'app non si blocca se un modulo non carica)
+
+## 🆕 Changelog v2.1
+
+- **Scheda Report Pneumatici** (`js/report.js`): dal dettaglio veicolo il pulsante «📄 Report pneumatici» apre una scheda stampabile ispirata al CarReport del portale Cormach — intestazione officina (dalle impostazioni richiami), dati veicolo, 4 quadranti con grafica battistrada SVG e fascia rossa proporzionale all'usura, valore «Media» evidenziato, icone di stato, legenda e riquadro «Pneumatici in deposito» con posizione. Layout dedicato per stampa/salvataggio PDF (A4). Include la nota: non sostituisce il report ufficiale HandyScan Manager.
+- Service worker `v7` con precache del nuovo modulo.

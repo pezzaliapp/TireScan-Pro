@@ -163,7 +163,7 @@ function openDetail(id) {
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-ghost" onclick="openEdit('${HS.escHTML(r.id)}')">✎ Modifica</button>
         <button class="btn btn-ghost" onclick="apptNew('${HS.escHTML(HS.escJS(r.targa))}','${HS.escHTML(HS.escJS(r.cliente))}')">📅 Appuntamento</button>
-        <button class="btn btn-primary" onclick="window.print()">🖨 Stampa</button>
+        <button class="btn btn-primary" onclick="openTireReport('${HS.escHTML(r.id)}')">📄 Report pneumatici</button>
         <button class="btn btn-danger" onclick="deleteRecord('${HS.escHTML(r.id)}')">✕ Elimina</button>
       </div>
     </div>

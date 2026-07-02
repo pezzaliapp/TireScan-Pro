@@ -1,5 +1,5 @@
-/* HandyScan PWA — Service Worker v1.5 */
-const CACHE = 'handyscan-v6';
+/* HandyScan PWA — Service Worker v1.6 */
+const CACHE = 'handyscan-v7';
 const ASSETS = [
   './',
   './index.html',
@@ -10,6 +10,7 @@ const ASSETS = [
   './js/appointments.js',
   './js/recall.js',
   './js/demo.js',
+  './js/report.js',
   './js/app.js',
   './manifest.json',
   './icons/icon-192.png',
