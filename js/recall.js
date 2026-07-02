@@ -1,5 +1,5 @@
 /* ================================================================
-   HandyScan  |  js/recall.js  — Modulo Richiami Clienti v1.0
+   TireScan-Pro  |  js/recall.js  — Modulo Richiami Clienti v1.0
    Tipi: critico, periodico (X mesi), stagionale, anniversario
    Open Source — github.com/cormachsrl/handyscan-pwa
    ================================================================ */

@@ -1,7 +1,7 @@
 {
-  "name": "HandyScan – Tire Monitor",
-  "short_name": "HandyScan",
-  "description": "Gestione scansioni pneumatici Handy Scan by Cormach Srl. Open source, offline-ready.",
+  "name": "TireScan-Pro",
+  "short_name": "TireScanPro",
+  "description": "Agenda appuntamenti e richiami clienti per chi usa il profilometro Handy Scan. App indipendente, open source, offline-ready.",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "any",

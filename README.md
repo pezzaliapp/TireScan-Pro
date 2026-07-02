@@ -1,6 +1,6 @@
-# 🔍 HandyScan – Tire Monitor PWA
+# 🛞 TireScan-Pro
 
-> App open source per la gestione delle scansioni pneumatici **Handy Scan by Cormach Srl**
+> Agenda appuntamenti e richiami clienti per chi usa il profilometro **Handy Scan** — app indipendente e gratuita
 > Progressive Web App — PC, iPhone, Android, Tablet in officina
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -262,7 +262,7 @@ Ogni feedback aiuta a migliorare l'app per tutti.
 
 ## ⚠️ Disclaimer e limitazione di responsabilità
 
-HandyScan PWA è un progetto **gratuito e open source (licenza MIT)**, offerto come strumento di
+TireScan-Pro è un progetto **gratuito e open source (licenza MIT)**, offerto come strumento di
 supporto organizzativo per le officine che utilizzano il profilometro Handy Scan.
 
 - Il software è fornito **"così com'è"**, senza garanzie di alcun tipo, esplicite o implicite.

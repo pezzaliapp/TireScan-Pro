@@ -1,5 +1,5 @@
 /* ================================================================
-   HandyScan  |  js/appointments.js  — Agenda Appuntamenti v2.0
+   TireScan-Pro  |  js/appointments.js  — Agenda Appuntamenti v2.0
    - Calendario mensile interno (vista mese + vista elenco)
    - Creazione, modifica ed eliminazione appuntamenti
    - Export .ics conforme RFC 5545 (VTIMEZONE Europe/Rome,
@@ -119,7 +119,7 @@ function buildVEVENT(a) {
     .filter(Boolean).join('\n');
   return [
     'BEGIN:VEVENT',
-    `UID:${a.id}@handyscan`,
+    `UID:${a.id}@tirescanpro`,
     `DTSTAMP:${stamp}`,
     `DTSTART;TZID=${APPT_TZ}:${icsDateTime(a.date, a.time)}`,
     `DTEND;TZID=${APPT_TZ}:${addMinutes(a.date, a.time, a.dur)}`,
@@ -136,9 +136,9 @@ function buildVEVENT(a) {
 function buildICS(list, calName) {
   const lines = [
     'BEGIN:VCALENDAR', 'VERSION:2.0',
-    'PRODID:-//HandyScan//Cormach//IT',
+    'PRODID:-//TireScan-Pro//IT',
     'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
-    `X-WR-CALNAME:${icsEscape(calName || 'HandyScan Agenda')}`,
+    `X-WR-CALNAME:${icsEscape(calName || 'TireScan-Pro Agenda')}`,
     `X-WR-TIMEZONE:${APPT_TZ}`,
     ...VTIMEZONE,
     ...list.flatMap(buildVEVENT),
@@ -164,7 +164,7 @@ function downloadICS(a) {
 function downloadAgendaICS() {
   const list = apptSorted();
   if (!list.length) { toast('❌ Nessun appuntamento da esportare', 't-err'); return; }
-  triggerDownload(icsBlob(list), `handyscan_agenda_${todayISO()}.ics`);
+  triggerDownload(icsBlob(list), `tirescanpro_agenda_${todayISO()}.ics`);
   toast(`📅 Agenda esportata (${list.length} eventi)`, 't-ok');
 }
 
@@ -175,7 +175,7 @@ async function shareICS(list, calName, filename) {
   const file = new File([blob], filename, { type: 'text/calendar' });
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: calName || 'HandyScan Agenda' });
+      await navigator.share({ files: [file], title: calName || 'TireScan-Pro Agenda' });
       return;
     } catch (e) { if (e && e.name === 'AbortError') return; }
   }
@@ -189,7 +189,7 @@ function shareAppt(id) {
 function shareAgenda() {
   const list = apptSorted();
   if (!list.length) { toast('❌ Nessun appuntamento da condividere', 't-err'); return; }
-  shareICS(list, 'HandyScan Agenda', `handyscan_agenda_${todayISO()}.ics`);
+  shareICS(list, 'TireScan-Pro Agenda', `tirescanpro_agenda_${todayISO()}.ics`);
 }
 
 /* Link diretti Google Calendar / Outlook per il singolo evento */

@@ -1,5 +1,5 @@
 /* ================================================================
-   HandyScan  |  js/report.js  — Scheda Report Pneumatici v2.0
+   TireScan-Pro  |  js/report.js  — Scheda Report Pneumatici v2.0
    Design "rapporto tecnico": per ogni ruota una barra di profondità
    su scala 0–8 mm con zone critico/attenzione/OK, indicatore sul
    valore misurato, mini-schema del veicolo con la ruota evidenziata,
@@ -144,7 +144,7 @@ function buildTireReport(r) {
     </div>
 
     <div class="tr-footer">
-      Stampato il ${HS.escHTML(oggi)} · Documento generato con HandyScan PWA (open source) a scopo informativo:
+      Stampato il ${HS.escHTML(oggi)} · Documento generato con TireScan-Pro (app indipendente, open source) a scopo informativo:
       riporta il valore minimo rilevato per gomma. Le misure per singola scanalatura e il report certificato
       sono disponibili nel portale Cormach / HandyScan Manager.
     </div>

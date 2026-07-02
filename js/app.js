@@ -1,11 +1,11 @@
 /* ================================================================
-   HandyScan  |  js/app.js  — Logica principale v1.1
+   TireScan-Pro  |  js/app.js  — Logica principale v1.1
    Open Source — github.com/cormachsrl/handyscan-pwa
    ================================================================ */
 'use strict';
 
 /* ── Versione app (aggiornare qui a ogni release) ── */
-const APP_VERSION = '2.8.0';
+const APP_VERSION = '2.9.0';
 /* Indirizzo per segnalazioni bug/proposte (mostrato nel pannello ℹ️) */
 const FEEDBACK_EMAIL = 'a.pezzali@cormachsrl.com';
 
@@ -504,7 +504,7 @@ function showAppInfo(gate = false, onAccept = null) {
   m.id = 'app-info-overlay';
   if (gate) m.style.zIndex = '1001';
   m.innerHTML = `<div class="rc-modal" style="max-width:660px">
-    <div class="rc-modal-head"><h3>${gate ? '⚠️ Prima di iniziare' : 'ℹ️ HandyScan PWA — Informazioni'}</h3>
+    <div class="rc-modal-head"><h3>${gate ? '⚠️ Prima di iniziare' : 'ℹ️ TireScan-Pro — Informazioni'}</h3>
       ${gate ? '' : '<button class="btn btn-ghost btn-sm" onclick="this.closest(\'.rc-modal-overlay\').remove()">✕</button>'}</div>
     <div style="font-size:13px;line-height:1.65;display:flex;flex-direction:column;gap:12px;max-height:55vh;overflow-y:auto">
       <div><strong>Versione:</strong> ${APP_VERSION} · <strong>Licenza:</strong> MIT · App indipendente e gratuita</div>
@@ -533,7 +533,7 @@ function showAppInfo(gate = false, onAccept = null) {
       <div><strong>Hai trovato un errore o hai un'idea?</strong> Ogni segnalazione aiuta a migliorare
         l'app per tutti.
         <div style="margin-top:8px">
-          <a class="btn btn-primary btn-sm" href="mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent('HandyScan PWA v' + APP_VERSION + ' — segnalazione')}&body=${encodeURIComponent('Descrivi qui il problema o la proposta:\n\n\nCosa stavi facendo quando è successo:\n\n')}">
+          <a class="btn btn-primary btn-sm" href="mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent('TireScan-Pro v' + APP_VERSION + ' — segnalazione')}&body=${encodeURIComponent('Descrivi qui il problema o la proposta:\n\n\nCosa stavi facendo quando è successo:\n\n')}">
             📧 Scrivi una segnalazione</a>
           <span style="font-size:11px;color:var(--muted);margin-left:8px">${FEEDBACK_EMAIL}</span>
         </div></div>
@@ -550,7 +550,7 @@ function showAppInfo(gate = false, onAccept = null) {
     </div>
     <div class="rc-modal-actions" style="margin-top:14px">
       ${gate
-        ? `<button class="btn btn-ghost" onclick="toast('Per usare HandyScan è necessario accettare le condizioni','t-err')">Non accetto</button>
+        ? `<button class="btn btn-ghost" onclick="toast('Per usare TireScan-Pro è necessario accettare le condizioni','t-err')">Non accetto</button>
            <button class="btn btn-primary" id="app-info-accept">✓ Accetto e continuo</button>`
         : `<button class="btn btn-primary" onclick="this.closest('.rc-modal-overlay').remove()">Chiudi</button>`}
     </div>

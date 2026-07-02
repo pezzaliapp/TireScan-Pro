@@ -1,5 +1,5 @@
 /* ================================================================
-   HandyScan  |  js/demo.js  — Dataset dimostrativo v1.0
+   TireScan-Pro  |  js/demo.js  — Dataset dimostrativo v1.0
    10 clienti fittizi (3 flotte da 5 targhe + 7 clienti singoli)
    con scansioni inventate: utile come strumento di vendita Handy Scan.
    ================================================================ */

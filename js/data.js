@@ -1,5 +1,5 @@
 /* ================================================================
-   HandyScan  |  js/data.js  v1.2
+   TireScan-Pro  |  js/data.js  v1.2
    - Nessun dato reale nel codice sorgente
    - Schermata di benvenuto al primo avvio
    ================================================================ */
@@ -80,8 +80,8 @@ function showWelcomeScreen() {
   overlay.innerHTML = `
     <div class="welcome-box">
       <div class="welcome-logo">🔍</div>
-      <div class="welcome-title">Handy<span style="color:var(--cyan)">Scan</span></div>
-      <div class="welcome-sub">Gestione scansioni pneumatici · Cormach Srl</div>
+      <div class="welcome-title">Tire<span style="color:var(--cyan)">Scan</span>-Pro</div>
+      <div class="welcome-sub">Agenda e richiami per chi usa Handy Scan</div>
       <div class="welcome-steps">
         <div class="welcome-step hl">
           <span class="welcome-step-ico">1️⃣</span>
@@ -94,7 +94,7 @@ function showWelcomeScreen() {
           <span class="welcome-step-ico">2️⃣</span>
           <div>
             <div class="welcome-step-title">Importa direttamente l'Excel</div>
-            <div class="welcome-step-text">Non serve convertire nulla: HandyScan legge i file <strong>.xlsx</strong> del portale (report scansioni) e dell'anagrafica clienti (<strong>ExportCustomers</strong>). Sono accettati anche i CSV.</div>
+            <div class="welcome-step-text">Non serve convertire nulla: TireScan-Pro legge i file <strong>.xlsx</strong> del portale (report scansioni) e dell'anagrafica clienti (<strong>ExportCustomers</strong>). Sono accettati anche i CSV.</div>
           </div>
         </div>
         <div class="welcome-step hl">
@@ -402,7 +402,7 @@ function importReportRows(rows) {
         posizione:   g(15),
       };
     } else {
-      // formato nativo HandyScan (export dell'app stessa)
+      // formato nativo TireScan-Pro (export dell'app stessa)
       const targa = g(0).toUpperCase();
       if (!targa || targa === 'TARGA') continue;
       rec = {
@@ -458,7 +458,7 @@ function exportCSV() {
   const blob = new Blob([header+'\n'+rows.join('\n')], {type:'text/csv;charset=utf-8;'});
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
-  a.href = url; a.download = `handyscan_${todayStr().replace(/\//g,'-')}.csv`; a.click();
+  a.href = url; a.download = `tirescanpro_${todayStr().replace(/\//g,'-')}.csv`; a.click();
   URL.revokeObjectURL(url);
 }
 

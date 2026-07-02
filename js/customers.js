@@ -1,5 +1,5 @@
 /* ================================================================
-   HandyScan  |  js/customers.js  — Anagrafica Clienti v1.0
+   TireScan-Pro  |  js/customers.js  — Anagrafica Clienti v1.0
    Import Excel/CSV anagrafica (ExportCustomers) + matching per nome
    con i record di scansione, così ogni targa eredita email/telefono.
    Open Source — github.com/pezzaliapp/TireScan-Pro
