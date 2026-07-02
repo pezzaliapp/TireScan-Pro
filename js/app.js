@@ -5,7 +5,7 @@
 'use strict';
 
 /* ── Versione app (aggiornare qui a ogni release) ── */
-const APP_VERSION = '2.9.0';
+const APP_VERSION = '2.9.1';
 /* Indirizzo per segnalazioni bug/proposte (mostrato nel pannello ℹ️) */
 const FEEDBACK_EMAIL = 'a.pezzali@cormachsrl.com';
 
@@ -511,8 +511,8 @@ function showAppInfo(gate = false, onAccept = null) {
 
       <div><strong>Da dove arrivano i dati.</strong> L'app si alimenta con i due file Excel che scarichi
         da <strong>HandyScan Manager sul portale TireApp</strong> (portal.cormachsrl.com):
-        il <strong>report scansioni</strong> (Rapporti → Scarica) e l'<strong>elenco clienti</strong>
-        (Anagrafiche → esporta). Li importi da ⬆ Importa e l'app riconosce da sola il tipo di file.
+        l'Excel delle scansioni dalla sezione <strong>Magazzino</strong> (Lista per targa)
+        e l'<strong>elenco clienti</strong> dalla sezione <strong>Anagrafiche</strong>. Li importi da ⬆ Importa e l'app riconosce da sola il tipo di file.
         Puoi anche inserire o correggere scansioni a mano.</div>
 
       <div><strong>Il valore aggiunto: agenda e richiami.</strong> Sui dati importati l'app costruisce

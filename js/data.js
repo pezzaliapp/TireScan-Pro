@@ -86,15 +86,15 @@ function showWelcomeScreen() {
         <div class="welcome-step hl">
           <span class="welcome-step-ico">1️⃣</span>
           <div>
-            <div class="welcome-step-title">Esporta dal portale Cormach</div>
-            <div class="welcome-step-text">Vai su <strong>portal.cormachsrl.com/tireapp/tires-store</strong>, applica i filtri e clicca <strong>Scarica</strong> per ottenere il file Excel.</div>
+            <div class="welcome-step-title">Scarica i due Excel dal portale TireApp</div>
+            <div class="welcome-step-text">Su <strong>portal.cormachsrl.com</strong>: dalla sezione <strong>Magazzino</strong> (Lista per targa) scarichi l'Excel delle scansioni; da <strong>Anagrafiche</strong> esporti l'elenco clienti.</div>
           </div>
         </div>
         <div class="welcome-step hl">
           <span class="welcome-step-ico">2️⃣</span>
           <div>
             <div class="welcome-step-title">Importa direttamente l'Excel</div>
-            <div class="welcome-step-text">Non serve convertire nulla: TireScan-Pro legge i file <strong>.xlsx</strong> del portale (report scansioni) e dell'anagrafica clienti (<strong>ExportCustomers</strong>). Sono accettati anche i CSV.</div>
+            <div class="welcome-step-text">Non serve convertire nulla: TireScan-Pro legge i file <strong>.xlsx</strong> del portale — quello del <strong>Magazzino</strong> (scansioni per targa) e quello delle <strong>Anagrafiche</strong> (clienti) — e riconosce da solo quale dei due stai importando. Sono accettati anche i CSV.</div>
           </div>
         </div>
         <div class="welcome-step hl">

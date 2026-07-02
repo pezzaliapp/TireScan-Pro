@@ -231,8 +231,8 @@ Creato per i clienti **Handy Scan – Cormach Srl**, Correggio (RE)
 
 L'app si alimenta con i **due file Excel di HandyScan Manager sul portale TireApp** (portal.cormachsrl.com):
 
-1. **Report scansioni** — Rapporti → filtri → *Scarica* (`StoreReportByPlate.xlsx`)
-2. **Elenco clienti** — Anagrafiche → esporta (`ExportCustomers.xlsx`)
+1. **Excel delle scansioni** — sezione **Magazzino** → Lista per targa → esporta (`StoreReportByPlate.xlsx`)
+2. **Elenco clienti** — sezione **Anagrafiche** → esporta (`ExportCustomers.xlsx`)
 
 Si importano da **⬆ Importa** (o dalla schermata di benvenuto): l'app riconosce automaticamente il
 tipo di file, aggiorna i veicoli per targa e collega email/telefono dei clienti. I dati si aggiornano
