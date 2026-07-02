@@ -227,6 +227,35 @@ Creato per i clienti **Handy Scan – Cormach Srl**, Correggio (RE)
 
 ---
 
+## 📥 Da dove arrivano i dati
+
+L'app si alimenta con i **due file Excel di HandyScan Manager sul portale TireApp** (portal.cormachsrl.com):
+
+1. **Report scansioni** — Rapporti → filtri → *Scarica* (`StoreReportByPlate.xlsx`)
+2. **Elenco clienti** — Anagrafiche → esporta (`ExportCustomers.xlsx`)
+
+Si importano da **⬆ Importa** (o dalla schermata di benvenuto): l'app riconosce automaticamente il
+tipo di file, aggiorna i veicoli per targa e collega email/telefono dei clienti. I dati si aggiornano
+reimportando l'Excel quando serve; le scansioni possono anche essere inserite o corrette a mano.
+
+## 🎯 Il valore aggiunto
+
+Il portale genera i report certificati; questa app leggera aggiunge la **gestione operativa quotidiana**:
+
+- 📅 **Agenda appuntamenti** — calendario mensile interno, condivisibile con il calendario del
+  telefono, Google Calendar e Outlook (file `.ics` / Web Share)
+- 📬 **Richiami clienti** — quattro logiche automatiche (critico, controllo periodico, cambio
+  stagionale, anniversario) con email, telefonata o WhatsApp a messaggio già pronto
+- e intorno: dashboard con allarmi, archivio, scheda pneumatici stampabile, statistiche con
+  priorità di richiamo
+
+## 🐞 Bug e richieste
+
+Progetto **indipendente e gratuito**, nato con la speranza di portare un valore in più a chi usa
+Handy Scan. Segnala errori o proposte migliorative nelle
+[**Issues su GitHub**](https://github.com/pezzaliapp/TireScan-Pro/issues): ogni feedback aiuta a
+migliorare l'app per tutti.
+
 ## ⚠️ Disclaimer e limitazione di responsabilità
 
 HandyScan PWA è un progetto **gratuito e open source (licenza MIT)**, offerto come strumento di
@@ -235,8 +264,9 @@ supporto organizzativo per le officine che utilizzano il profilometro Handy Scan
 - Il software è fornito **"così com'è"**, senza garanzie di alcun tipo, esplicite o implicite.
 - I valori visualizzati derivano dai **dati importati o inseriti dall'utente** e hanno finalità
   puramente **informative e organizzative**: non costituiscono certificazione tecnica né perizia.
-- L'app **non sostituisce** il portale Cormach né i report ufficiali di **HandyScan Manager**
-  (report certificati, misure per singola scanalatura, foto pneumatici, ispezione veicolo, etichette).
+- L'app **non si sostituisce in alcun modo a HandyScan Manager sul portale TireApp**, che resta il
+  riferimento per report certificati, misure per singola scanalatura, foto pneumatici, ispezione
+  veicolo ed etichette. Non si collega al portale: i dati si aggiornano reimportando l'Excel.
 - Ogni decisione relativa alla **sicurezza dei pneumatici** (sostituzione, idoneità alla circolazione,
   conformità al limite legale di 1,6 mm) deve basarsi su verifica diretta da parte di personale
   qualificato e sugli strumenti di misura ufficiali.

@@ -5,7 +5,7 @@
 'use strict';
 
 /* ── Versione app (aggiornare qui a ogni release) ── */
-const APP_VERSION = '2.7.0';
+const APP_VERSION = '2.7.1';
 
 /* ── State ── */
 let currentView  = 'dashboard';
@@ -495,32 +495,47 @@ function showAppInfo() {
   document.querySelector('.rc-modal-overlay')?.remove();
   const m = document.createElement('div');
   m.className = 'rc-modal-overlay';
-  m.innerHTML = `<div class="rc-modal" style="max-width:640px">
+  m.innerHTML = `<div class="rc-modal" style="max-width:660px">
     <div class="rc-modal-head"><h3>ℹ️ HandyScan PWA — Informazioni</h3>
       <button class="btn btn-ghost btn-sm" onclick="this.closest('.rc-modal-overlay').remove()">✕</button></div>
     <div style="font-size:13px;line-height:1.65;display:flex;flex-direction:column;gap:12px;max-height:60vh;overflow-y:auto">
-      <div><strong>Versione:</strong> ${APP_VERSION} · <strong>Licenza:</strong> MIT (open source, gratuita)</div>
-      <div><strong>Cosa fa.</strong> App gratuita di supporto per chi usa il profilometro Handy Scan:
-        importa i file Excel/CSV del portale (report scansioni e anagrafica clienti), mostra dashboard e
-        allarmi sulle soglie di usura, gestisce i richiami clienti via email/telefono/WhatsApp,
-        un'agenda appuntamenti con calendario condivisibile (.ics, Google Calendar, Outlook),
-        la stampa di una scheda pneumatici per il cliente, statistiche operative e l'archivio veicoli.</div>
-      <div><strong>Cosa NON fa.</strong> Non sostituisce il portale Cormach né i report ufficiali di
-        HandyScan Manager, che restano gli strumenti di riferimento per report certificati, misure per
-        singola scanalatura, foto pneumatici, ispezione veicolo ed etichette.</div>
-      <div><strong>Privacy.</strong> Tutti i dati restano esclusivamente su questo dispositivo
-        (localStorage del browser): nessun invio a server, nessuna registrazione, nessun tracciamento.
-        L'eliminazione dei dati del sito comporta la perdita dei dati inseriti: esegui backup con ⬇ Esporta.</div>
+      <div><strong>Versione:</strong> ${APP_VERSION} · <strong>Licenza:</strong> MIT · App indipendente e gratuita</div>
+
+      <div><strong>Da dove arrivano i dati.</strong> L'app si alimenta con i due file Excel che scarichi
+        da <strong>HandyScan Manager sul portale TireApp</strong> (portal.cormachsrl.com):
+        il <strong>report scansioni</strong> (Rapporti → Scarica) e l'<strong>elenco clienti</strong>
+        (Anagrafiche → esporta). Li importi da ⬆ Importa e l'app riconosce da sola il tipo di file.
+        Puoi anche inserire o correggere scansioni a mano.</div>
+
+      <div><strong>Il valore aggiunto: agenda e richiami.</strong> Sui dati importati l'app costruisce
+        ciò che il flusso quotidiano richiede: un'<strong>agenda appuntamenti</strong> con calendario
+        mensile, condivisibile con il calendario del telefono, Google Calendar e Outlook (.ics), e i
+        <strong>richiami clienti</strong> su quattro logiche (critico, controllo periodico, cambio
+        stagionale, anniversario) con email, telefonata o WhatsApp a messaggio pronto. Intorno:
+        dashboard con allarmi sulle soglie di usura, archivio veicoli, scheda pneumatici stampabile
+        per il cliente e statistiche con priorità di richiamo.</div>
+
+      <div><strong>Cosa NON fa.</strong> Non si collega al portale (i dati si aggiornano reimportando
+        l'Excel), non conosce le misure per singola scanalatura, le foto, l'ispezione veicolo o le
+        etichette: per tutto questo il riferimento resta <strong>HandyScan Manager su TireApp</strong>,
+        a cui questa app non intende in alcun modo sostituirsi.</div>
+
+      <div><strong>Privacy.</strong> Tutti i dati restano esclusivamente su questo dispositivo:
+        nessun server, nessuna registrazione, nessun tracciamento. Fai backup periodici con ⬇ Esporta.</div>
+
+      <div><strong>Bug e proposte.</strong> È un progetto indipendente e gratuito, nato con la speranza
+        di portare un valore in più a chi usa Handy Scan: segnala errori o richieste migliorative su
+        <strong>github.com/pezzaliapp/TireScan-Pro</strong> (sezione Issues) — ogni feedback aiuta.</div>
+
       <div style="background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;font-size:12px">
-        <strong>⚠️ Limitazione di responsabilità.</strong> Software fornito "così com'è", senza garanzie di
-        alcun tipo. I valori mostrati derivano dai dati importati o inseriti dall'utente e hanno finalità
-        puramente informative e organizzative: non costituiscono certificazione tecnica né perizia.
-        Ogni decisione sulla sicurezza dei pneumatici (sostituzione, idoneità alla circolazione, conformità
-        al limite legale di 1,6 mm) deve basarsi su verifica diretta da parte di personale qualificato e
-        sugli strumenti di misura ufficiali. L'autore declina ogni responsabilità per danni diretti o
-        indiretti derivanti dall'uso dell'app o da decisioni assunte sulla base dei dati visualizzati.
-        Progetto indipendente: "Handy Scan" e "Cormach" appartengono ai rispettivi proprietari.</div>
-      <div style="font-size:11px;color:var(--muted)">Codice sorgente: github.com/pezzaliapp/TireScan-Pro</div>
+        <strong>⚠️ Limitazione di responsabilità.</strong> Software fornito "così com'è", senza garanzie.
+        I valori mostrati derivano dai dati importati o inseriti dall'utente e hanno finalità informative
+        e organizzative: non costituiscono certificazione tecnica né perizia. Ogni decisione sulla
+        sicurezza dei pneumatici (sostituzione, idoneità alla circolazione, limite legale di 1,6 mm)
+        deve basarsi su verifica diretta di personale qualificato con gli strumenti ufficiali.
+        L'autore declina ogni responsabilità per danni derivanti dall'uso dell'app o da decisioni
+        assunte sulla base dei dati visualizzati. "Handy Scan", "TireApp" e "Cormach" appartengono
+        ai rispettivi proprietari.</div>
     </div>
     <div class="rc-modal-actions" style="margin-top:14px">
       <button class="btn btn-primary" onclick="this.closest('.rc-modal-overlay').remove()">Ho capito</button>
