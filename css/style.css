@@ -759,3 +759,23 @@ td { padding: 11px 14px; vertical-align: middle; }
 }
 
 .tr-note { font-size: 10.5px; color: #888; font-style: italic; margin-top: 10px; }
+
+/* ── Lista priorità richiamo (statistiche) ── */
+.tc-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 9px 6px; border-bottom: 1px solid var(--bdr);
+}
+.tc-row:last-child { border-bottom: none; }
+.tc-row:hover { background: var(--bg3); }
+.tc-bar-wrap {
+  flex: 0 0 140px; height: 10px; background: var(--bg4);
+  border-radius: 5px; overflow: hidden;
+}
+.tc-bar { height: 100%; border-radius: 5px; }
+.tc-cliente { flex: 1; min-width: 0; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tc-mm { font-weight: 800; font-size: 13px; white-space: nowrap; }
+.tc-actions { display: flex; gap: 4px; flex-wrap: wrap; }
+@media (max-width: 700px) {
+  .tc-row { flex-wrap: wrap; }
+  .tc-bar-wrap { flex-basis: 100%; }
+}

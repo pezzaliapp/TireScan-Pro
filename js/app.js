@@ -5,7 +5,7 @@
 'use strict';
 
 /* ── Versione app (aggiornare qui a ogni release) ── */
-const APP_VERSION = '2.6.0';
+const APP_VERSION = '2.6.1';
 
 /* ── State ── */
 let currentView  = 'dashboard';
@@ -336,18 +336,37 @@ function renderStats() {
       scales:{x:axisNo, y:{...axis, beginAtZero:true, ticks:{...axis.ticks, stepSize:1}}}}
   });
 
-  /* 3 — Priorità richiamo: i 10 veicoli con meno battistrada */
-  const top = recs.map(r=>({t:r.targa, c:r.cliente, m:HS.getMinMm(r)}))
-                  .sort((a,b)=>a.m-b.m).slice(0,10);
-  chartInstances.top = new Chart($('ch-top'),{
-    type:'bar', data:{ labels: top.map(x=>x.t),
-      datasets:[{data:top.map(x=>x.m),
-        backgroundColor:top.map(x=>HS.getStatus(x.m).color), borderRadius:6, borderWidth:0}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},
-        tooltip:{callbacks:{label:(ctx)=>`${top[ctx.dataIndex].m.toFixed(1)} mm — ${top[ctx.dataIndex].c||''}`}}},
-      scales:{x:{...axis, min:0, max:8, title:{display:true,text:'mm minimi rilevati',color:'#94a3b8',font:{size:10}}}, y:axisNo}}
-  });
+  /* 3 — Priorità richiamo: lista OPERATIVA dei 10 veicoli con meno
+     battistrada — barra profondità, cliente, contatti e azioni rapide */
+  const topEl = $('top-critici');
+  if (topEl) {
+    const top = recs.map(r=>({r, m:HS.getMinMm(r)})).sort((a,b)=>a.m-b.m).slice(0,10);
+    topEl.innerHTML = top.map(({r, m}) => {
+      const st = HS.getStatus(m);
+      const ct = (window.RC && RC.resolveContact) ? RC.resolveContact(r) : { email:'', telefono:'' };
+      const wa = (ct.telefono && window.RC && RC.waNumber) ? RC.waNumber(ct.telefono) : '';
+      const telHref = (ct.telefono||'').replace(/\s/g,'');
+      const waMsg = encodeURIComponent(`Gentile ${r.cliente||'cliente'}, dal controllo pneumatici del ${r.data||''} il veicolo ${r.targa} risulta con battistrada minimo ${m.toFixed(1)} mm. La contattiamo per fissare un controllo/sostituzione.`);
+      const mailSub = encodeURIComponent(`Controllo pneumatici — targa ${r.targa}`);
+      return `<div class="tc-row">
+        <div class="tc-bar-wrap" title="${m.toFixed(1)} mm su 8">
+          <div class="tc-bar" style="width:${Math.min(100, m/8*100)}%;background:${st.color}"></div>
+        </div>
+        <span class="targa-chip" style="cursor:pointer" onclick="openDetail('${HS.escHTML(r.id)}')">${HS.escHTML(r.targa)}</span>
+        <span class="tc-cliente">${HS.escHTML(r.cliente || '—')}</span>
+        <span class="tc-mm" style="color:${st.color}">${m.toFixed(1)} mm</span>
+        <span class="badge badge-${st.cls}">${st.label}</span>
+        <span class="tc-actions">
+          ${ct.email ? `<a class="btn btn-ghost btn-xs" href="mailto:${HS.escHTML(ct.email)}?subject=${mailSub}" title="Email a ${HS.escHTML(ct.email)}">📧</a>` : ''}
+          ${wa ? `<a class="btn btn-ghost btn-xs" href="https://wa.me/${wa}?text=${waMsg}" target="_blank" rel="noopener" title="WhatsApp">💬</a>` : ''}
+          ${telHref ? `<a class="btn btn-ghost btn-xs" href="tel:${HS.escHTML(telHref)}" title="Chiama ${HS.escHTML(ct.telefono)}">📞</a>` : ''}
+          ${!ct.email && !telHref && window.rcEditEmail ? `<button class="btn btn-ghost btn-xs" onclick="rcEditEmail('${HS.escHTML(HS.escJS(r.targa))}')" title="Aggiungi contatto">＋☎</button>` : ''}
+          <button class="btn btn-ghost btn-xs" onclick="apptNew('${HS.escHTML(HS.escJS(r.targa))}','${HS.escHTML(HS.escJS(r.cliente))}')" title="Fissa appuntamento">📅</button>
+          <button class="btn btn-ghost btn-xs" onclick="openDetail('${HS.escHTML(r.id)}')" title="Apri dettaglio">→</button>
+        </span>
+      </div>`;
+    }).join('') || '<div class="empty-state"><p>Nessun veicolo in archivio.</p></div>';
+  }
 
   /* 4 — Scansioni per mese (ultimi 12): stagionalità del lavoro */
   const now = new Date(); const labels=[]; const keys=[];

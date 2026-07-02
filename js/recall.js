@@ -493,4 +493,4 @@ function initRecall() {
   initRecallGlobals();
 }
 
-window.RC = { init:initRecall, renderView:renderRecallView, renderEmailManager, renderSettings:renderRecallSettings, getEmails:()=>rcEmails };
+window.RC = { init:initRecall, renderView:renderRecallView, renderEmailManager, renderSettings:renderRecallSettings, getEmails:()=>rcEmails, resolveContact:rcResolveContact, waNumber };
