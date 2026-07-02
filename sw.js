@@ -1,5 +1,5 @@
-/* HandyScan PWA — Service Worker v1.4 */
-const CACHE = 'handyscan-v5';
+/* HandyScan PWA — Service Worker v1.5 */
+const CACHE = 'handyscan-v6';
 const ASSETS = [
   './',
   './index.html',
@@ -40,9 +40,9 @@ self.addEventListener('fetch', e => {
   e.respondWith(
     caches.match(e.request)
       .then(cached => cached || fetch(e.request).then(res => {
-        if (res && res.status === 200) caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+        if (res && res.status === 200 && res.type === 'basic') caches.open(CACHE).then(c => c.put(e.request, res.clone()));
         return res;
       }))
-      .catch(() => caches.match('./index.html'))
+      .catch(() => e.request.mode === 'navigate' ? caches.match('./index.html') : Response.error())
   );
 });

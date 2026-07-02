@@ -41,7 +41,7 @@ function showView(name) {
   if (name === 'stats')     renderStats();
   if (name === 'customers'  && window.CUST) CUST.renderView();
   if (name === 'appointments' && window.APPT) APPT.renderView();
-  if (name === 'recalls') {
+  if (name === 'recalls' && window.RC) {
     RC.renderView(HS.getRecords());
     document.querySelectorAll('.rc-tab').forEach(t => t.classList.remove('active'));
     document.getElementById('rctab-pending')?.classList.add('active');
@@ -57,7 +57,6 @@ function renderDashboard() {
   const critici    = recs.filter(r => HS.getMinMm(r) <= HS.CRIT_MM);
   const attenzione = recs.filter(r => { const m=HS.getMinMm(r); return m>HS.CRIT_MM && m<=HS.WARN_MM; });
   const deposito   = recs.filter(r => r.deposito);
-  const richiami   = window.RC ? RC.renderView : ()=>{};
 
   $('s-total').textContent  = recs.length;
   $('s-ok').textContent     = recs.length - critici.length - attenzione.length;
@@ -163,7 +162,7 @@ function openDetail(id) {
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-ghost" onclick="openEdit('${HS.escHTML(r.id)}')">✎ Modifica</button>
-        <button class="btn btn-ghost" onclick="apptNew('${HS.escHTML(r.targa)}','${HS.escHTML(r.cliente).replace(/'/g,'')}')">📅 Appuntamento</button>
+        <button class="btn btn-ghost" onclick="apptNew('${HS.escHTML(HS.escJS(r.targa))}','${HS.escHTML(HS.escJS(r.cliente))}')">📅 Appuntamento</button>
         <button class="btn btn-primary" onclick="window.print()">🖨 Stampa</button>
         <button class="btn btn-danger" onclick="deleteRecord('${HS.escHTML(r.id)}')">✕ Elimina</button>
       </div>
@@ -443,7 +442,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
   HS.loadData();
   if (window.CUST) CUST.init();
   if (window.APPT) APPT.init();
-  RC.init();
+  if (window.RC) RC.init();
   showView('dashboard');
 
   $('search-input')?.addEventListener('input', renderList);

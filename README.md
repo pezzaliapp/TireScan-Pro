@@ -46,7 +46,8 @@ handyscan-pwa/
 | 📊 **Statistiche** | 4 grafici: stato, deposito, trend mm, operatori |
 | ⬆ **Import Excel/CSV** | Legge `.xlsx` diretti: report scansioni **e** anagrafica clienti |
 | 👥 **Anagrafica** | Email, telefono, cellulare, indirizzo collegati per nome alla targa |
-| 📅 **Agenda** | Appuntamenti con export `.ics` per il calendario del telefono |
+| 📅 **Agenda** | Calendario mensile interno + vista elenco, appuntamenti modificabili, avviso sovrapposizioni |
+| 📤 **Calendario condivisibile** | Export `.ics` (singolo evento o agenda completa, RFC 5545 con fuso Europe/Rome), condivisione via Web Share API, link diretti Google Calendar e Outlook |
 | ⬇ **Export CSV** | Esporta tutti i dati in CSV compatibile Excel |
 | 🖨 **Stampa** | Scheda cliente ottimizzata per stampa/PDF |
 | 📲 **Installabile** | PWA: si installa su iOS, Android, PC come app nativa |
@@ -190,3 +191,24 @@ Soglie configurabili in `js/data.js` (costanti `WARN_MM` e `CRIT_MM`).
 
 MIT — Libero uso, modifica e distribuzione.
 Creato per i clienti **Handy Scan – Cormach Srl**, Correggio (RE)
+
+---
+
+## 🆕 Changelog v2.0 (agenda & fix)
+
+**Agenda / Calendario**
+- Calendario mensile interno con navigazione, evidenza del giorno corrente e creazione rapida cliccando sul giorno
+- Vista elenco alternativa con modifica, condivisione e download per singolo appuntamento
+- Modifica degli appuntamenti esistenti (prima era possibile solo eliminarli)
+- Avviso automatico di sovrapposizione oraria durante la creazione/modifica
+- Export `.ics` dell'intera agenda (importabile in Google Calendar, Apple Calendar, Outlook, Thunderbird)
+- Condivisione con altre app tramite Web Share API (file `.ics` verso calendario, email, WhatsApp) con fallback al download
+- Link rapidi "Aggiungi a Google Calendar" e Outlook per singolo evento
+- File `.ics` conformi RFC 5545: `VTIMEZONE Europe/Rome`, `TZID` su inizio/fine, line folding a 75 ottetti, `METHOD:PUBLISH`, `LOCATION` (dalle impostazioni officina)
+
+**Bug fix**
+- `escHTML` ora neutralizza anche gli apici singoli; aggiunto `escJS` per le stringhe interpolate negli `onclick` (chiusura di un possibile vettore XSS da dati importati)
+- `getMinMm` robusto contro valori mancanti o non numerici (evitava `NaN` in tabella e grafici)
+- Export CSV con quoting RFC 4180 (virgole/virgolette nei nomi cliente non corrompono più le colonne) e protezione da formula injection in Excel
+- Service worker: fallback a `index.html` solo per le navigazioni (prima poteva restituire HTML al posto di CSS/JS falliti); cache bump `v6`
+- `RC.init()` protetto da guard come gli altri moduli (l'app non si blocca se un modulo non carica)

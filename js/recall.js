@@ -312,7 +312,7 @@ function renderRecallView(records) {
           : `<button class="btn btn-ghost btn-sm" onclick="rcEditEmail('${HS.escHTML(rc.targa)}')">📧 Aggiungi email</button>`}
         ${hasTel ? `<a class="btn btn-ghost btn-sm" href="tel:${HS.escHTML(telHref)}">📞 Chiama</a>` : ''}
         ${hasTel ? `<a class="btn btn-ghost btn-sm" href="https://wa.me/${wa}" target="_blank" rel="noopener">💬 WhatsApp</a>` : ''}
-        <button class="btn btn-ghost btn-sm" onclick="apptNew('${HS.escHTML(rc.targa)}','${HS.escHTML(rc.cliente).replace(/'/g,'')}')">📅 Appuntamento</button>
+        <button class="btn btn-ghost btn-sm" onclick="apptNew('${HS.escHTML(HS.escJS(rc.targa))}','${HS.escHTML(HS.escJS(rc.cliente))}')">📅 Appuntamento</button>
         <button class="btn btn-ghost btn-sm" onclick="rcDoPreview('${HS.escHTML(rc.targa)}','${rc.tipo}')">👁 Anteprima</button>
         <button class="btn btn-ghost btn-sm" onclick="rcDoCopy('${HS.escHTML(rc.targa)}','${rc.tipo}')">📋 Copia</button>
         ${!sent

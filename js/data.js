@@ -14,7 +14,11 @@ let records = [];
 
 /* ── Utility ── */
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
-function getMinMm(r) { return Math.min(r.ant_sx_mm, r.ant_dx_mm, r.post_sx_mm, r.post_dx_mm); }
+function getMinMm(r) {
+  const vals = [r.ant_sx_mm, r.ant_dx_mm, r.post_sx_mm, r.post_dx_mm]
+    .map(Number).filter(Number.isFinite);
+  return vals.length ? Math.min(...vals) : 0;
+}
 function getStatus(mm) {
   if (mm <= CRIT_MM) return { cls:'crit', label:'CRITICO',    color:'#ef4444' };
   if (mm <= WARN_MM) return { cls:'warn', label:'ATTENZIONE', color:'#f97316' };
@@ -32,7 +36,12 @@ function parseDate(s) {
   return new Date(s);
 }
 function escHTML(s) {
-  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+/* Escape per stringhe JS interpolate dentro attributi onclick.
+   Da usare SEMPRE insieme a escHTML: escHTML(escJS(v)).            */
+function escJS(s) {
+  return String(s ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\r?\n/g,' ');
 }
 function todayStr() {
   const d = new Date();
@@ -317,13 +326,20 @@ function parseAnyFile(file, type = 'auto') {
 }
 
 /* ── Export CSV ── */
+function csvCell(v) {
+  let s = String(v ?? '');
+  // formula injection guard (Excel/LibreOffice)
+  if (/^[=+\-@\t]/.test(s)) s = "'" + s;
+  if (/[",\n\r;]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
 function exportCSV() {
   const header = 'Targa,Data,Operatore,Cliente,ANT SX Tipo,ANT SX mm,ANT DX Tipo,ANT DX mm,POST SX Tipo,POST SX mm,POST DX Tipo,POST DX mm,Deposito,Posizione';
   const rows   = records.map(r =>
     [r.targa, r.data, r.operatore, r.cliente,
      r.ant_sx_tipo, r.ant_sx_mm, r.ant_dx_tipo, r.ant_dx_mm,
      r.post_sx_tipo, r.post_sx_mm, r.post_dx_tipo, r.post_dx_mm,
-     r.deposito ? 'Sì' : 'No', r.posizione].join(',')
+     r.deposito ? 'Sì' : 'No', r.posizione].map(csvCell).join(',')
   );
   const blob = new Blob([header+'\n'+rows.join('\n')], {type:'text/csv;charset=utf-8;'});
   const url  = URL.createObjectURL(blob);
@@ -358,7 +374,7 @@ Object.assign(window.HS, {
   parseAnyFile, fileToRows, importReportRows, cellStr,
   resetAll,
   isFirstLaunch, showWelcomeScreen,
-  uid, getMinMm, getStatus, mmClass, parseDate, escHTML, todayStr,
+  uid, getMinMm, getStatus, mmClass, parseDate, escHTML, escJS, todayStr,
   WARN_MM, CRIT_MM,
   getRecords: () => records,
   setRecords: (r) => { records = r; saveData(); },
