@@ -4,6 +4,9 @@
    ================================================================ */
 'use strict';
 
+/* ── Versione app (aggiornare qui a ogni release) ── */
+const APP_VERSION = '2.3.0';
+
 /* ── State ── */
 let currentView  = 'dashboard';
 let sortCol      = 'data';
@@ -438,6 +441,10 @@ window.addEventListener('DOMContentLoaded', ()=>{
   // Applica tema salvato
   const savedTheme = localStorage.getItem('handyscan_theme') || 'dark';
   applyTheme(savedTheme);
+
+  // versione visibile nell'header
+  const vEl = document.getElementById('app-version');
+  if (vEl) vEl.textContent = 'v' + APP_VERSION;
 
   HS.loadData();
   if (window.CUST) CUST.init();

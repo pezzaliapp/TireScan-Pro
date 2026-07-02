@@ -1,5 +1,5 @@
 /* HandyScan PWA — Service Worker v1.6 */
-const CACHE = 'handyscan-v8';
+const CACHE = 'handyscan-v10';
 const ASSETS = [
   './',
   './index.html',

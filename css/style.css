@@ -740,3 +740,12 @@ td { padding: 11px 14px; vertical-align: middle; }
   .tr-sheet { box-shadow: none; border-radius: 0; max-width: none; margin: 0; padding: 0; }
   .tr-grid { break-inside: avoid; }
 }
+
+/* ── Badge versione app ── */
+.app-version {
+  display: inline-block; margin-left: 6px; padding: 1px 7px;
+  background: var(--bg3); border: 1px solid var(--bdr); border-radius: 20px;
+  font-size: 10px; font-weight: 700; color: var(--cyan); letter-spacing: .3px;
+}
+
+.tr-note { font-size: 10.5px; color: #888; font-style: italic; margin-top: 10px; }
