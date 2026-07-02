@@ -125,6 +125,10 @@ function showWelcomeScreen() {
         </button>
       </div>
       <div class="welcome-hint">Puoi importare i dati in qualsiasi momento da <strong>⬆ Importa</strong> nell'header</div>
+      <div class="welcome-hint" style="font-size:10.5px;opacity:.75;max-width:520px;margin:6px auto 0">
+        App gratuita e open source (MIT), fornita "così com'è" a scopo informativo/organizzativo:
+        non sostituisce i report ufficiali del portale Cormach / HandyScan Manager.
+        Dettagli completi nel pulsante ℹ️ in alto.</div>
     </div>
   `;
   document.body.appendChild(overlay);

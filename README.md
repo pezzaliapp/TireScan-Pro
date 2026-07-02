@@ -224,3 +224,25 @@ Creato per i clienti **Handy Scan – Cormach Srl**, Correggio (RE)
 - **Import a prova di tracciato**: le colonne del report portale ora vengono riconosciute **per nome di intestazione** ("Targa veicolo", "Anteriore sinistro"/"Min", "Pneumatici in deposito"…) e non più per posizione fissa. Se Cormach aggiunge o sposta colonne (es. email cliente, modello), i millimetri finiscono comunque nei campi giusti. Fallback automatico sugli indici storici se le intestazioni non sono riconoscibili.
 - Se il file del portale contiene una **colonna email**, l'indirizzo viene salvato automaticamente nei contatti richiami della targa (senza sovrascrivere quelli inseriti a mano).
 - Service worker `v8`.
+
+---
+
+## ⚠️ Disclaimer e limitazione di responsabilità
+
+HandyScan PWA è un progetto **gratuito e open source (licenza MIT)**, offerto come strumento di
+supporto organizzativo per le officine che utilizzano il profilometro Handy Scan.
+
+- Il software è fornito **"così com'è"**, senza garanzie di alcun tipo, esplicite o implicite.
+- I valori visualizzati derivano dai **dati importati o inseriti dall'utente** e hanno finalità
+  puramente **informative e organizzative**: non costituiscono certificazione tecnica né perizia.
+- L'app **non sostituisce** il portale Cormach né i report ufficiali di **HandyScan Manager**
+  (report certificati, misure per singola scanalatura, foto pneumatici, ispezione veicolo, etichette).
+- Ogni decisione relativa alla **sicurezza dei pneumatici** (sostituzione, idoneità alla circolazione,
+  conformità al limite legale di 1,6 mm) deve basarsi su verifica diretta da parte di personale
+  qualificato e sugli strumenti di misura ufficiali.
+- L'autore **declina ogni responsabilità** per danni diretti o indiretti derivanti dall'uso dell'app
+  o da decisioni assunte sulla base dei dati visualizzati.
+- **Privacy**: tutti i dati restano esclusivamente sul dispositivo dell'utente (localStorage);
+  nessun dato viene inviato a server esterni. La cancellazione dei dati del browser comporta la
+  perdita dei dati: si consiglia backup periodico tramite ⬇ Esporta.
+- Progetto **indipendente**: "Handy Scan" e "Cormach" sono nomi/marchi dei rispettivi proprietari.

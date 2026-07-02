@@ -5,7 +5,7 @@
 'use strict';
 
 /* ── Versione app (aggiornare qui a ogni release) ── */
-const APP_VERSION = '2.6.1';
+const APP_VERSION = '2.7.0';
 
 /* ── State ── */
 let currentView  = 'dashboard';
@@ -489,6 +489,46 @@ function toggleTheme() {
   applyTheme(cur === 'dark' ? 'light' : 'dark');
 }
 window.toggleTheme = toggleTheme;
+
+/* ── Info & Disclaimer ── */
+function showAppInfo() {
+  document.querySelector('.rc-modal-overlay')?.remove();
+  const m = document.createElement('div');
+  m.className = 'rc-modal-overlay';
+  m.innerHTML = `<div class="rc-modal" style="max-width:640px">
+    <div class="rc-modal-head"><h3>ℹ️ HandyScan PWA — Informazioni</h3>
+      <button class="btn btn-ghost btn-sm" onclick="this.closest('.rc-modal-overlay').remove()">✕</button></div>
+    <div style="font-size:13px;line-height:1.65;display:flex;flex-direction:column;gap:12px;max-height:60vh;overflow-y:auto">
+      <div><strong>Versione:</strong> ${APP_VERSION} · <strong>Licenza:</strong> MIT (open source, gratuita)</div>
+      <div><strong>Cosa fa.</strong> App gratuita di supporto per chi usa il profilometro Handy Scan:
+        importa i file Excel/CSV del portale (report scansioni e anagrafica clienti), mostra dashboard e
+        allarmi sulle soglie di usura, gestisce i richiami clienti via email/telefono/WhatsApp,
+        un'agenda appuntamenti con calendario condivisibile (.ics, Google Calendar, Outlook),
+        la stampa di una scheda pneumatici per il cliente, statistiche operative e l'archivio veicoli.</div>
+      <div><strong>Cosa NON fa.</strong> Non sostituisce il portale Cormach né i report ufficiali di
+        HandyScan Manager, che restano gli strumenti di riferimento per report certificati, misure per
+        singola scanalatura, foto pneumatici, ispezione veicolo ed etichette.</div>
+      <div><strong>Privacy.</strong> Tutti i dati restano esclusivamente su questo dispositivo
+        (localStorage del browser): nessun invio a server, nessuna registrazione, nessun tracciamento.
+        L'eliminazione dei dati del sito comporta la perdita dei dati inseriti: esegui backup con ⬇ Esporta.</div>
+      <div style="background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;font-size:12px">
+        <strong>⚠️ Limitazione di responsabilità.</strong> Software fornito "così com'è", senza garanzie di
+        alcun tipo. I valori mostrati derivano dai dati importati o inseriti dall'utente e hanno finalità
+        puramente informative e organizzative: non costituiscono certificazione tecnica né perizia.
+        Ogni decisione sulla sicurezza dei pneumatici (sostituzione, idoneità alla circolazione, conformità
+        al limite legale di 1,6 mm) deve basarsi su verifica diretta da parte di personale qualificato e
+        sugli strumenti di misura ufficiali. L'autore declina ogni responsabilità per danni diretti o
+        indiretti derivanti dall'uso dell'app o da decisioni assunte sulla base dei dati visualizzati.
+        Progetto indipendente: "Handy Scan" e "Cormach" appartengono ai rispettivi proprietari.</div>
+      <div style="font-size:11px;color:var(--muted)">Codice sorgente: github.com/pezzaliapp/TireScan-Pro</div>
+    </div>
+    <div class="rc-modal-actions" style="margin-top:14px">
+      <button class="btn btn-primary" onclick="this.closest('.rc-modal-overlay').remove()">Ho capito</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+}
+window.showAppInfo = showAppInfo;
 
 /* ── PWA Install ── */
 window.addEventListener('beforeinstallprompt', e=>{
