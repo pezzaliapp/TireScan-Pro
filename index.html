@@ -39,9 +39,13 @@
     <button class="theme-toggle" onclick="showAppInfo()" title="Informazioni, licenza e disclaimer">ℹ️</button>
     <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" title="Cambia tema">🌙</button>
     <button class="btn btn-ghost btn-sm" onclick="HS.exportCSV()">⬇ Esporta</button>
-    <label class="btn btn-ghost btn-sm" style="cursor:pointer" title="Importa report scansioni o anagrafica clienti (Excel o CSV)">
-      ⬆ Importa
+    <label class="btn btn-ghost btn-sm" style="cursor:pointer" title="Importa l'Excel delle scansioni (sezione Magazzino del portale)">
+      ⬆ Scansioni
       <input id="import-file" type="file" accept=".xlsx,.xls,.csv" style="display:none">
+    </label>
+    <label class="btn btn-ghost btn-sm" style="cursor:pointer" title="Importa l'elenco clienti (sezione Anagrafiche del portale)">
+      👥 Clienti
+      <input id="import-file-clienti" type="file" accept=".xlsx,.xls,.csv" style="display:none">
     </label>
     <button class="btn btn-ghost btn-sm" onclick="resetAllData()" title="Azzera tutti i dati locali">🗑 Azzera</button>
     <button class="btn btn-primary btn-sm" onclick="openAdd()">＋ Nuova</button>

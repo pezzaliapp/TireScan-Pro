@@ -5,7 +5,7 @@
 'use strict';
 
 /* ── Versione app (aggiornare qui a ogni release) ── */
-const APP_VERSION = '2.9.1';
+const APP_VERSION = '2.9.2';
 /* Indirizzo per segnalazioni bug/proposte (mostrato nel pannello ℹ️) */
 const FEEDBACK_EMAIL = 'a.pezzali@cormachsrl.com';
 
@@ -458,24 +458,42 @@ function deleteRecord(id) {
 }
 window.deleteRecord=deleteRecord;
 
-/* ── Import/Export ── */
-function handleImport(e) {
-  const file = e.target.files[0]; if (!file) return;
-  HS.parseAnyFile(file, 'auto').then(n => {
+/* ── Import/Export ──
+   Entrambi i pulsanti usano il riconoscimento automatico del tipo di
+   file: se l'utente seleziona il file "sbagliato" per quel pulsante,
+   l'import va comunque a buon fine e un avviso spiega cosa è successo. */
+function doImport(file, expected) {
+  HS.fileToRows(file).then(rows => {
+    const isCust = HS.rowsAreCustomers(rows);
+    const kind = isCust ? 'clienti' : 'scansioni';
+    const n = isCust
+      ? (window.CUST ? CUST.importRows(rows) : 0)
+      : HS.importReportRows(rows);
     if (window.CUST) CUST.load();
-    const isCust = /customers/i.test(file.name);
-    toast(n > 0
-      ? `✅ ${n} ${isCust ? 'clienti' : 'record'} importati`
-      : '❌ Nessun dato riconosciuto nel file', n > 0 ? 't-ok' : 't-err');
     if (n > 0) {
+      toast(expected && expected !== kind
+        ? `ℹ️ Il file era quello ${kind === 'clienti' ? "delle Anagrafiche" : "del Magazzino"}: importat${isCust ? 'i' : 'e'} ${n} ${kind}`
+        : `✅ ${n} ${kind} importat${isCust ? 'i' : 'e'}`, 't-ok');
       if (window.CUST) CUST.renderView();
       if (window.RC) RC.renderView(HS.getRecords());
       showView(isCust ? 'customers' : 'dashboard');
+    } else {
+      toast('❌ Nessun dato riconosciuto nel file', 't-err');
     }
   }).catch(err => {
     console.warn('Import:', err);
     toast('❌ Errore lettura file (formato non valido?)', 't-err');
   });
+}
+window.doImport = doImport;
+function handleImport(e) {
+  const file = e.target.files[0]; if (!file) return;
+  doImport(file, 'scansioni');
+  e.target.value = '';
+}
+function handleImportClienti(e) {
+  const file = e.target.files[0]; if (!file) return;
+  doImport(file, 'clienti');
   e.target.value = '';
 }
 
@@ -606,6 +624,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
   $('filter-dep')?.addEventListener('change', renderList);
   $('filter-stato')?.addEventListener('change', renderList);
   $('import-file')?.addEventListener('change', handleImport);
+  $('import-file-clienti')?.addEventListener('change', handleImportClienti);
 
   // Cancello disclaimer: obbligatorio alla prima apertura, poi mai più.
   // Dopo l'accettazione, al primo avvio assoluto compare il benvenuto.

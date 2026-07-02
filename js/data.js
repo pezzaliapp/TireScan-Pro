@@ -485,7 +485,7 @@ window.resetAllData = function () {
 window.HS = window.HS || {};
 Object.assign(window.HS, {
   records, loadData, saveData, importCSV, exportCSV,
-  parseAnyFile, fileToRows, importReportRows, cellStr,
+  parseAnyFile, fileToRows, importReportRows, rowsAreCustomers, cellStr,
   resetAll,
   isFirstLaunch, showWelcomeScreen,
   uid, getMinMm, getStatus, mmClass, parseDate, escHTML, escJS, todayStr,
