@@ -5,7 +5,7 @@
 'use strict';
 
 /* ── Versione app (aggiornare qui a ogni release) ── */
-const APP_VERSION = '2.9.6';
+const APP_VERSION = '2.9.7';
 /* Indirizzo per segnalazioni bug/proposte (mostrato nel pannello ℹ️) */
 const FEEDBACK_EMAIL = 'info@alessandropezzali.it';
 
@@ -474,9 +474,13 @@ function doImport(file, expected) {
       toast(expected && expected !== kind
         ? `ℹ️ Il file era quello ${kind === 'clienti' ? "delle Anagrafiche" : "del Magazzino"}: importat${isCust ? 'i' : 'e'} ${n} ${kind}`
         : `✅ ${n} ${kind} importat${isCust ? 'i' : 'e'}`, 't-ok');
-      if (window.CUST) CUST.renderView();
+      // resta sulla vista corrente, aggiornandola
       if (window.RC) RC.renderView(HS.getRecords());
-      showView(isCust ? 'customers' : 'dashboard');
+      showView(currentView);
+      // se manca ancora l'altro file, proponilo subito
+      const custCount = (window.CUST && CUST.count) ? CUST.count() : 0;
+      if (!isCust && custCount === 0) showImportNextPrompt('clienti', n);
+      else if (isCust && HS.getRecords().length === 0) showImportNextPrompt('scansioni', n);
     } else {
       toast('❌ Nessun dato riconosciuto nel file', 't-err');
     }
@@ -485,6 +489,38 @@ function doImport(file, expected) {
     toast('❌ Errore lettura file (formato non valido?)', 't-err');
   });
 }
+
+/* Richiamo post-import: propone il secondo Excel se l'altro archivio è vuoto */
+function showImportNextPrompt(missing, imported) {
+  document.getElementById('import-next-overlay')?.remove();
+  const isClienti = missing === 'clienti';
+  const m = document.createElement('div');
+  m.className = 'rc-modal-overlay';
+  m.id = 'import-next-overlay';
+  m.innerHTML = `<div class="rc-modal" style="max-width:480px">
+    <div class="rc-modal-head"><h3>✅ ${imported} ${isClienti ? 'scansioni importate' : 'clienti importati'}</h3>
+      <button class="btn btn-ghost btn-sm" onclick="this.closest('.rc-modal-overlay').remove()">✕</button></div>
+    <div style="font-size:13px;line-height:1.6;margin-bottom:16px">
+      ${isClienti
+        ? `Per attivare <strong>richiami e appuntamenti a un tocco</strong> (email, telefono, WhatsApp)
+           importa anche l'<strong>elenco clienti</strong>: lo esporti dalla sezione
+           <strong>Anagrafiche</strong> del portale TireApp.`
+        : `Ora importa anche l'<strong>Excel delle scansioni</strong> dalla sezione
+           <strong>Magazzino</strong> (Lista per targa) del portale TireApp per vedere veicoli e allarmi.`}
+    </div>
+    <div class="rc-modal-actions">
+      <label class="btn btn-primary" style="cursor:pointer">
+        ${isClienti ? '👥 Importa elenco clienti' : '⬆ Importa scansioni'}
+        <input type="file" accept=".xlsx,.xls,.csv" style="display:none"
+          onchange="if(this.files[0]){doImport(this.files[0],'${missing}');} this.closest('.rc-modal-overlay').remove();">
+      </label>
+      <button class="btn btn-ghost" onclick="this.closest('.rc-modal-overlay').remove()">Più tardi</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+}
+window.showImportNextPrompt = showImportNextPrompt;
+
 window.doImport = doImport;
 function handleImport(e) {
   const file = e.target.files[0]; if (!file) return;

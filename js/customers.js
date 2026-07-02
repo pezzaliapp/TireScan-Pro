@@ -322,6 +322,7 @@ function initCustomers() {
 
 /* ── Expose ── */
 window.CUST = {
+  count: () => customers.length,
   init: initCustomers,
   load: custLoad,
   importRows: importCustomerRows,
