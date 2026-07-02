@@ -50,7 +50,7 @@ handyscan-pwa/
 | 📤 **Calendario condivisibile** | Export `.ics` (singolo evento o agenda completa, RFC 5545 con fuso Europe/Rome), condivisione via Web Share API, link diretti Google Calendar e Outlook |
 | ⬇ **Export CSV** | Esporta tutti i dati in CSV compatibile Excel |
 | 🖨 **Stampa** | Scheda cliente ottimizzata per stampa/PDF |
-| 📄 **Report pneumatici** | Scheda per veicolo in stile CarReport: 4 quadranti gomma con grafica battistrada e usura, valore medio, legenda, deposito — stampabile/salvabile in PDF (non sostituisce il report ufficiale del portale) |
+| 📄 **Report pneumatici** | Scheda per veicolo da consegnare al cliente: 4 quadranti con barre di profondità, sintesi con raccomandazione, legenda e deposito — stampabile/salvabile in PDF (non sostituisce il report ufficiale del portale) |
 | 📲 **Installabile** | PWA: si installa su iOS, Android, PC come app nativa |
 | 🌐 **Offline** | Funziona senza rete dopo il primo caricamento |
 
@@ -219,12 +219,12 @@ o approvazione** da parte di Cormach Srl.
 
 ## 🆕 Changelog v2.1
 
-- **Scheda Report Pneumatici** (`js/report.js`): dal dettaglio veicolo il pulsante «📄 Report pneumatici» apre una scheda stampabile ispirata al CarReport del portale Cormach — intestazione officina (dalle impostazioni richiami), dati veicolo, 4 quadranti con grafica battistrada SVG e fascia rossa proporzionale all'usura, valore «Media» evidenziato, icone di stato, legenda e riquadro «Pneumatici in deposito» con posizione. Layout dedicato per stampa/salvataggio PDF (A4). Include la nota: non sostituisce il report ufficiale HandyScan Manager.
+- **Scheda Report Pneumatici** (`js/report.js`): dal dettaglio veicolo il pulsante «📄 Report pneumatici» apre una scheda stampabile per il cliente — intestazione officina (dalle impostazioni richiami), dati veicolo, 4 quadranti con grafica battistrada SVG e fascia rossa proporzionale all'usura, valore «Media» evidenziato, icone di stato, legenda e riquadro «Pneumatici in deposito» con posizione. Layout dedicato per stampa/salvataggio PDF (A4). Include la nota: non sostituisce il report ufficiale HandyScan Manager.
 - Service worker `v7` con precache del nuovo modulo.
 
 ## 🆕 Changelog v2.2
 
-- **Import a prova di tracciato**: le colonne del report portale ora vengono riconosciute **per nome di intestazione** ("Targa veicolo", "Anteriore sinistro"/"Min", "Pneumatici in deposito"…) e non più per posizione fissa. Se Cormach aggiunge o sposta colonne (es. email cliente, modello), i millimetri finiscono comunque nei campi giusti. Fallback automatico sugli indici storici se le intestazioni non sono riconoscibili.
+- **Import a prova di tracciato**: le colonne del report portale ora vengono riconosciute **per nome di intestazione** ("Targa veicolo", "Anteriore sinistro"/"Min", "Pneumatici in deposito"…) e non più per posizione fissa. Se il tracciato del file cambia (nuove colonne come email cliente o modello, colonne spostate), i millimetri finiscono comunque nei campi giusti. Fallback automatico sugli indici storici se le intestazioni non sono riconoscibili.
 - Se il file del portale contiene una **colonna email**, l'indirizzo viene salvato automaticamente nei contatti richiami della targa (senza sovrascrivere quelli inseriti a mano).
 - Service worker `v8`.
 

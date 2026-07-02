@@ -146,7 +146,7 @@ function buildTireReport(r) {
     <div class="tr-footer">
       Stampato il ${HS.escHTML(oggi)} · Documento generato con TireScan-Pro (app indipendente, open source) a scopo informativo:
       riporta il valore minimo rilevato per gomma. Le misure per singola scanalatura e il report certificato
-      sono disponibili nel portale Cormach / HandyScan Manager.
+      sono disponibili in HandyScan Manager sul portale TireApp.
     </div>
   </div>`;
 }
