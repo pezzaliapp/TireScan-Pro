@@ -111,6 +111,17 @@ function showWelcomeScreen() {
             <div class="welcome-step-text">Tutto è salvato <strong>solo su questo dispositivo</strong>. Nessun altro utente vede le tue scansioni, anche condividendo lo stesso link.</div>
           </div>
         </div>
+        <div class="welcome-step" style="border-left-color:#f59e0b">
+          <span class="welcome-step-ico">⚠️</span>
+          <div>
+            <div class="welcome-step-title">App indipendente e gratuita — leggi prima di usarla</div>
+            <div class="welcome-step-text">Strumento di <strong>supporto organizzativo</strong> fornito "così com'è",
+            senza garanzie: <strong>non sostituisce in alcun modo HandyScan Manager sul portale TireApp</strong>,
+            che resta il riferimento per report certificati e misure ufficiali. Ogni decisione sulla sicurezza
+            dei pneumatici va verificata da personale qualificato. Disclaimer completo e contatto per
+            segnalazioni nel pulsante <strong>ℹ️</strong> in alto.</div>
+          </div>
+        </div>
       </div>
       <div class="welcome-cta">
         <label class="btn btn-primary" style="cursor:pointer;font-size:14px;padding:12px 24px">
@@ -125,10 +136,6 @@ function showWelcomeScreen() {
         </button>
       </div>
       <div class="welcome-hint">Puoi importare i dati in qualsiasi momento da <strong>⬆ Importa</strong> nell'header</div>
-      <div class="welcome-hint" style="font-size:10.5px;opacity:.75;max-width:520px;margin:6px auto 0">
-        App indipendente e gratuita (MIT): si alimenta con gli Excel di HandyScan Manager (TireApp)
-        e aggiunge agenda appuntamenti e richiami clienti. Non sostituisce in alcun modo
-        HandyScan Manager sul portale. Info, disclaimer e segnalazione bug nel pulsante ℹ️ in alto.</div>
     </div>
   `;
   document.body.appendChild(overlay);
@@ -136,6 +143,7 @@ function showWelcomeScreen() {
 
 function closeWelcome() {
   markWelcomed();
+  try { localStorage.setItem('handyscan_disclaimer_ok', '1'); } catch {}
   const el = document.getElementById('welcome-overlay');
   if (el) {
     el.style.opacity = '0';

@@ -5,7 +5,7 @@
 'use strict';
 
 /* ── Versione app (aggiornare qui a ogni release) ── */
-const APP_VERSION = '2.7.2';
+const APP_VERSION = '2.8.0';
 /* Indirizzo per segnalazioni bug/proposte (mostrato nel pannello ℹ️) */
 const FEEDBACK_EMAIL = 'a.pezzali@cormachsrl.com';
 
@@ -492,15 +492,21 @@ function toggleTheme() {
 }
 window.toggleTheme = toggleTheme;
 
-/* ── Info & Disclaimer ── */
-function showAppInfo() {
-  document.querySelector('.rc-modal-overlay')?.remove();
+/* ── Info & Disclaimer ──
+   showAppInfo(gate):
+   - gate=false → consultazione dal pulsante ℹ️ (chiudibile)
+   - gate=true  → CANCELLO D'INGRESSO: si apre all'avvio, copre l'app e
+     richiede l'accettazione esplicita; senza "Accetto" non si accede.  */
+function showAppInfo(gate = false, onAccept = null) {
+  document.getElementById('app-info-overlay')?.remove();
   const m = document.createElement('div');
   m.className = 'rc-modal-overlay';
+  m.id = 'app-info-overlay';
+  if (gate) m.style.zIndex = '1001';
   m.innerHTML = `<div class="rc-modal" style="max-width:660px">
-    <div class="rc-modal-head"><h3>ℹ️ HandyScan PWA — Informazioni</h3>
-      <button class="btn btn-ghost btn-sm" onclick="this.closest('.rc-modal-overlay').remove()">✕</button></div>
-    <div style="font-size:13px;line-height:1.65;display:flex;flex-direction:column;gap:12px;max-height:60vh;overflow-y:auto">
+    <div class="rc-modal-head"><h3>${gate ? '⚠️ Prima di iniziare' : 'ℹ️ HandyScan PWA — Informazioni'}</h3>
+      ${gate ? '' : '<button class="btn btn-ghost btn-sm" onclick="this.closest(\'.rc-modal-overlay\').remove()">✕</button>'}</div>
+    <div style="font-size:13px;line-height:1.65;display:flex;flex-direction:column;gap:12px;max-height:55vh;overflow-y:auto">
       <div><strong>Versione:</strong> ${APP_VERSION} · <strong>Licenza:</strong> MIT · App indipendente e gratuita</div>
 
       <div><strong>Da dove arrivano i dati.</strong> L'app si alimenta con i due file Excel che scarichi
@@ -510,31 +516,29 @@ function showAppInfo() {
         Puoi anche inserire o correggere scansioni a mano.</div>
 
       <div><strong>Il valore aggiunto: agenda e richiami.</strong> Sui dati importati l'app costruisce
-        ciò che il flusso quotidiano richiede: un'<strong>agenda appuntamenti</strong> con calendario
-        mensile, condivisibile con il calendario del telefono, Google Calendar e Outlook (.ics), e i
-        <strong>richiami clienti</strong> su quattro logiche (critico, controllo periodico, cambio
-        stagionale, anniversario) con email, telefonata o WhatsApp a messaggio pronto. Intorno:
-        dashboard con allarmi sulle soglie di usura, archivio veicoli, scheda pneumatici stampabile
-        per il cliente e statistiche con priorità di richiamo.</div>
+        un'<strong>agenda appuntamenti</strong> con calendario mensile condivisibile (.ics, Google
+        Calendar, Outlook) e i <strong>richiami clienti</strong> su quattro logiche (critico, controllo
+        periodico, cambio stagionale, anniversario) con email, telefonata o WhatsApp a messaggio pronto.
+        Intorno: dashboard con allarmi, archivio veicoli, scheda pneumatici stampabile e statistiche
+        con priorità di richiamo.</div>
 
       <div><strong>Cosa NON fa.</strong> Non si collega al portale (i dati si aggiornano reimportando
-        l'Excel), non conosce le misure per singola scanalatura, le foto, l'ispezione veicolo o le
-        etichette: per tutto questo il riferimento resta <strong>HandyScan Manager su TireApp</strong>,
+        l'Excel) e non conosce misure per singola scanalatura, foto, ispezione veicolo o etichette:
+        per tutto questo il riferimento resta <strong>HandyScan Manager su TireApp</strong>,
         a cui questa app non intende in alcun modo sostituirsi.</div>
 
       <div><strong>Privacy.</strong> Tutti i dati restano esclusivamente su questo dispositivo:
         nessun server, nessuna registrazione, nessun tracciamento. Fai backup periodici con ⬇ Esporta.</div>
 
-      <div><strong>Hai trovato un errore o hai un'idea?</strong> Questa è un'app indipendente e
-        gratuita, nata con la speranza di portare un valore in più a chi usa Handy Scan: ogni
-        segnalazione aiuta a migliorarla per tutti.
+      <div><strong>Hai trovato un errore o hai un'idea?</strong> Ogni segnalazione aiuta a migliorare
+        l'app per tutti.
         <div style="margin-top:8px">
           <a class="btn btn-primary btn-sm" href="mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent('HandyScan PWA v' + APP_VERSION + ' — segnalazione')}&body=${encodeURIComponent('Descrivi qui il problema o la proposta:\n\n\nCosa stavi facendo quando è successo:\n\n')}">
             📧 Scrivi una segnalazione</a>
           <span style="font-size:11px;color:var(--muted);margin-left:8px">${FEEDBACK_EMAIL}</span>
         </div></div>
 
-      <div style="background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;font-size:12px">
+      <div style="background:var(--bg3);border:1px solid #f59e0b;border-radius:8px;padding:10px 12px;font-size:12px">
         <strong>⚠️ Limitazione di responsabilità.</strong> Software fornito "così com'è", senza garanzie.
         I valori mostrati derivano dai dati importati o inseriti dall'utente e hanno finalità informative
         e organizzative: non costituiscono certificazione tecnica né perizia. Ogni decisione sulla
@@ -545,10 +549,21 @@ function showAppInfo() {
         ai rispettivi proprietari.</div>
     </div>
     <div class="rc-modal-actions" style="margin-top:14px">
-      <button class="btn btn-primary" onclick="this.closest('.rc-modal-overlay').remove()">Ho capito</button>
+      ${gate
+        ? `<button class="btn btn-ghost" onclick="toast('Per usare HandyScan è necessario accettare le condizioni','t-err')">Non accetto</button>
+           <button class="btn btn-primary" id="app-info-accept">✓ Accetto e continuo</button>`
+        : `<button class="btn btn-primary" onclick="this.closest('.rc-modal-overlay').remove()">Chiudi</button>`}
     </div>
   </div>`;
   document.body.appendChild(m);
+  if (gate) {
+    const btn = document.getElementById('app-info-accept');
+    if (btn) btn.addEventListener('click', () => {
+      try { localStorage.setItem('handyscan_disclaimer_ok', '1'); } catch {}
+      m.remove();
+      if (typeof onAccept === 'function') onAccept();
+    });
+  }
 }
 window.showAppInfo = showAppInfo;
 
@@ -592,8 +607,12 @@ window.addEventListener('DOMContentLoaded', ()=>{
   $('filter-stato')?.addEventListener('change', renderList);
   $('import-file')?.addEventListener('change', handleImport);
 
-  // Mostra welcome screen solo al primo avvio
-  if (HS.isFirstLaunch()) {
-    setTimeout(() => HS.showWelcomeScreen(), 300);
+  // Cancello disclaimer: obbligatorio alla prima apertura, poi mai più.
+  // Dopo l'accettazione, al primo avvio assoluto compare il benvenuto.
+  const showWelcomeIfFirst = () => { if (HS.isFirstLaunch()) setTimeout(() => HS.showWelcomeScreen(), 200); };
+  if (!localStorage.getItem('handyscan_disclaimer_ok')) {
+    setTimeout(() => showAppInfo(true, showWelcomeIfFirst), 300);
+  } else {
+    showWelcomeIfFirst();
   }
 });
