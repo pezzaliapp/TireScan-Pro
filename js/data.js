@@ -426,8 +426,12 @@ function importReportRows(rows) {
     if (!rec.targa) continue;
     if (email) storeImportedEmail(rec.targa, email);
     const idx2 = records.findIndex(x => x.targa === rec.targa);
-    if (idx2 >= 0) records[idx2] = { ...rec, id: records[idx2].id };
-    else records.push(rec);
+    if (idx2 >= 0) {
+      // aggiornamento per targa: conserva id e, se il file non fornisce
+      // la stagione, quella impostata in precedenza (es. a mano)
+      records[idx2] = { ...rec, id: records[idx2].id,
+                        stagione: rec.stagione || records[idx2].stagione || '' };
+    } else records.push(rec);
     imported++;
   }
   saveData();
