@@ -253,6 +253,7 @@ function renderCustomersView() {
         <td><div class="plate-chips">${chips}</div></td>
         <td style="white-space:nowrap">
           <button class="btn btn-primary btn-xs" onclick="custAppt('${key}')" title="Fissa appuntamento">📅 Appunt.</button>
+          <button class="btn btn-ghost btn-xs" onclick="custDelete('${key}')" title="Elimina cliente">🗑</button>
         </td>
       </tr>`;
     }).join('');
@@ -321,6 +322,16 @@ function initCustomers() {
 }
 
 /* ── Expose ── */
+window.custDelete = function(key) {
+  const c = customers.find(x => (x.code || normName(x.name)) === key);
+  if (!c) return;
+  if (!confirm(`Eliminare il cliente "${c.name}" dall'anagrafica?\nLe scansioni dei suoi veicoli restano in archivio.`)) return;
+  customers = customers.filter(x => (x.code || normName(x.name)) !== key);
+  custSave();
+  if (window.toast) toast('🗑 Cliente eliminato', '');
+  renderCustomersView();
+};
+
 window.CUST = {
   count: () => customers.length,
   init: initCustomers,

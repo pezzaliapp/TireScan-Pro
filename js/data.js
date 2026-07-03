@@ -483,12 +483,91 @@ function resetAll() {
   if (window.APPT && APPT.init) APPT.init();
   if (window.RC   && RC.init)   RC.init();
 }
+/* ══════════ BACKUP & RIPRISTINO ══════════
+   Il backup è un unico file JSON con TUTTO: scansioni, clienti,
+   appuntamenti, contatti richiami e impostazioni officina.
+   Viene scaricato automaticamente prima dell'azzeramento e può
+   essere reimportato in qualsiasi momento (anche su altro device). */
+const BACKUP_KEYS = ['handyscan_records', 'handyscan_customers', 'handyscan_appointments',
+                     'handyscan_rc_emails', 'handyscan_rc_config'];
+
+function buildBackup() {
+  const data = {};
+  BACKUP_KEYS.forEach(k => {
+    const v = localStorage.getItem(k);
+    if (v !== null) data[k] = v;
+  });
+  return {
+    app: 'TireScan-Pro', type: 'tirescanpro-backup',
+    exportedAt: new Date().toISOString(),
+    data,
+  };
+}
+
+function downloadBackup() {
+  const bk = buildBackup();
+  const blob = new Blob([JSON.stringify(bk, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const ts = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+  a.href = url; a.download = `tirescanpro_backup_${ts}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+  return bk;
+}
+window.downloadBackup = () => { downloadBackup(); if (window.toast) toast('💾 Backup completo scaricato', 't-ok'); };
+
+function restoreBackup(obj) {
+  if (!obj || obj.type !== 'tirescanpro-backup' || !obj.data) return false;
+  BACKUP_KEYS.forEach(k => {
+    if (obj.data[k] !== undefined) localStorage.setItem(k, obj.data[k]);
+    else localStorage.removeItem(k);
+  });
+  // ricarico tutti i moduli
+  loadData();
+  if (window.CUST && CUST.load)  CUST.load();
+  if (window.APPT && APPT.init)  APPT.init();
+  if (window.RC   && RC.init)    RC.init();
+  return true;
+}
+window.restoreBackupObj = restoreBackup;
+
+/* ── Azzera: modale con backup automatico ── */
 window.resetAllData = function () {
-  if (!confirm("Azzerare TUTTI i dati locali (scansioni, clienti, appuntamenti, contatti)? Le impostazioni officina restano. Azione non reversibile.")) return;
+  document.getElementById('reset-overlay')?.remove();
+  const m = document.createElement('div');
+  m.className = 'rc-modal-overlay';
+  m.id = 'reset-overlay';
+  m.innerHTML = `<div class="rc-modal" style="max-width:520px">
+    <div class="rc-modal-head"><h3>🗑 Azzera tutti i dati</h3>
+      <button class="btn btn-ghost btn-sm" onclick="this.closest('.rc-modal-overlay').remove()">✕</button></div>
+    <div style="font-size:13px;line-height:1.6;margin-bottom:16px">
+      Verranno eliminati <strong>scansioni, clienti, appuntamenti e contatti richiami</strong>
+      da questo dispositivo (le impostazioni officina restano).<br><br>
+      Consigliato: <strong>scarica prima il backup completo</strong> — un file .json che potrai
+      reimportare in qualsiasi momento da ⬆ Scansioni o 👥 Clienti per ripristinare tutto.
+    </div>
+    <div class="rc-modal-actions">
+      <button class="btn btn-primary" onclick="doResetWithBackup()">💾 Scarica backup e azzera</button>
+      <button class="btn btn-danger" onclick="doResetNoBackup()">Azzera senza backup</button>
+      <button class="btn btn-ghost" onclick="this.closest('.rc-modal-overlay').remove()">Annulla</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+};
+
+function finishReset() {
+  document.getElementById('reset-overlay')?.remove();
   resetAll();
-  if (window.toast) toast('🗑 Dati azzerati', '');
+  if (window.toast) toast('🗑 Dati azzerati — ripartenza da zero', '');
   if (window.CUST && CUST.renderView) CUST.renderView();
   if (window.showView) showView('dashboard');
+  if (window.HS && HS.showWelcomeScreen) setTimeout(() => HS.showWelcomeScreen(), 400);
+}
+window.doResetWithBackup = function () { downloadBackup(); setTimeout(finishReset, 350); };
+window.doResetNoBackup  = function () {
+  if (!confirm('Sicuro? Senza backup i dati NON saranno recuperabili.')) return;
+  finishReset();
 };
 
 /* ── Expose ── */

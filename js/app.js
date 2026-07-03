@@ -5,7 +5,7 @@
 'use strict';
 
 /* ── Versione app (aggiornare qui a ogni release) ── */
-const APP_VERSION = '2.9.9';
+const APP_VERSION = '2.10.0';
 /* Indirizzo per segnalazioni bug/proposte (mostrato nel pannello ℹ️) */
 const FEEDBACK_EMAIL = 'info@alessandropezzali.it';
 
@@ -136,8 +136,9 @@ function renderList() {
       <td class="mm-val ${HS.mmClass(r.post_dx_mm)}">${r.post_dx_mm.toFixed(1)}</td>
       <td><span class="mm-val ${HS.mmClass(min)}" style="font-size:14px">${min.toFixed(1)}</span></td>
       <td><span style="font-size:15px">${r.deposito?'✅':'—'}</span></td>
-      <td onclick="event.stopPropagation();openEdit('${HS.escHTML(r.id)}')">
-        <button class="btn btn-ghost btn-xs">✎</button>
+      <td onclick="event.stopPropagation()" style="white-space:nowrap">
+        <button class="btn btn-ghost btn-xs" onclick="openEdit('${HS.escHTML(r.id)}')" title="Modifica">✎</button>
+        <button class="btn btn-ghost btn-xs" onclick="deleteRecordRow('${HS.escHTML(r.id)}')" title="Elimina">🗑</button>
       </td>
     </tr>`;
   }).join('');
@@ -457,12 +458,35 @@ function deleteRecord(id) {
   showView('list');
 }
 window.deleteRecord=deleteRecord;
+window.deleteRecordRow = function(id) {
+  const r = HS.getRecords().find(x => x.id === id);
+  if (!r) return;
+  if (!confirm(`Eliminare la scansione di ${r.targa}${r.cliente ? ' (' + r.cliente + ')' : ''}?`)) return;
+  HS.setRecords(HS.getRecords().filter(x => x.id !== id));
+  toast('🗑 Scansione eliminata');
+  renderList();
+};
 
 /* ── Import/Export ──
    Entrambi i pulsanti usano il riconoscimento automatico del tipo di
    file: se l'utente seleziona il file "sbagliato" per quel pulsante,
    l'import va comunque a buon fine e un avviso spiega cosa è successo. */
 function doImport(file, expected) {
+  // file di backup completo (.json)
+  if (/\.json$/i.test(file.name || '')) {
+    file.text().then(txt => {
+      let obj = null;
+      try { obj = JSON.parse(txt); } catch {}
+      if (obj && window.restoreBackupObj && restoreBackupObj(obj)) {
+        toast(`✅ Backup ripristinato: ${HS.getRecords().length} scansioni, ${(window.CUST && CUST.count) ? CUST.count() : 0} clienti`, 't-ok');
+        if (window.RC) RC.renderView(HS.getRecords());
+        showView('dashboard');
+      } else {
+        toast('❌ File .json non riconosciuto come backup TireScan-Pro', 't-err');
+      }
+    }).catch(() => toast('❌ Errore lettura file', 't-err'));
+    return;
+  }
   HS.fileToRows(file).then(rows => {
     const isCust = HS.rowsAreCustomers(rows);
     const kind = isCust ? 'clienti' : 'scansioni';
