@@ -480,6 +480,32 @@ const DEMO_SCANS = [
   }
 ];
 
+/* Appuntamenti demo: date relative a oggi, così la demo è sempre attuale.
+   offsetGiorni può essere negativo (appuntamento passato).              */
+const DEMO_APPTS = [
+  { off: -3, time: '09:00', dur: 30, targa: 'FB213AD', cliente: 'Autotrasporti Bianchi S.r.l.', note: 'Sostituzione anteriori (critico)' },
+  { off:  0, time: '11:30', dur: 45, targa: 'TX002MI', cliente: 'Cooperativa Taxi Aurora',      note: 'Controllo usura irregolare' },
+  { off:  1, time: '08:30', dur: 60, targa: 'NP102BO', cliente: 'NoleggioPiù S.r.l.',           note: 'Cambio stagionale + riequilibratura' },
+  { off:  2, time: '15:00', dur: 30, targa: 'FB210AA', cliente: 'Autotrasporti Bianchi S.r.l.', note: 'Ritiro treno invernale dal deposito' },
+  { off:  4, time: '10:00', dur: 30, targa: 'PG333FI', cliente: 'Paolo Greco',                  note: 'Controllo periodico 6 mesi' },
+  { off:  7, time: '17:30', dur: 45, targa: 'EX555NA', cliente: 'Mario Esposito',               note: 'Preventivo 4 gomme estive' },
+  { off: 10, time: '09:30', dur: 30, targa: 'GF120MO', cliente: 'Giulia Ferrari',               note: 'Sostituzione — usura in zona critica' },
+];
+
+function demoAppointments() {
+  const pad = n => String(n).padStart(2, '0');
+  return DEMO_APPTS.map((a, i) => {
+    const d = new Date(); d.setDate(d.getDate() + a.off);
+    return {
+      id: 'demo-appt-' + i,
+      targa: a.targa, cliente: a.cliente,
+      date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
+      time: a.time, dur: a.dur, note: a.note,
+      createdAt: new Date().toISOString(),
+    };
+  });
+}
+
 /* anagrafica → matrice come ExportCustomers (20 colonne) */
 function demoCustomerRows() {
   const header = ['customer_code','company_name','first_name','last_name','Indirizzo','locality','Prov.','zip_code','region','zone','Paese','fiscal_code','vat_code','phone_1','phone_2','mobile_1','mobile_2','fax','email_1','email_2'];
@@ -519,8 +545,13 @@ function loadDemoData() {
   HS.setRecords(recs);
   if (window.CUST) CUST.load();
 
+  // 3) appuntamenti in agenda (date relative a oggi)
+  const appts = demoAppointments();
+  localStorage.setItem('handyscan_appointments', JSON.stringify(appts));
+  if (window.APPT && APPT.init) APPT.init();
+
   if (window.closeWelcome) closeWelcome();
-  if (window.toast) toast('🎬 Dati demo caricati: ' + DEMO_CUSTOMERS.length + ' clienti, ' + DEMO_SCANS.length + ' scansioni', 't-ok');
+  if (window.toast) toast('🎬 Dati demo caricati: ' + DEMO_CUSTOMERS.length + ' clienti, ' + DEMO_SCANS.length + ' scansioni, ' + appts.length + ' appuntamenti', 't-ok');
   if (window.showView) showView('dashboard');
 }
 

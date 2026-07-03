@@ -5,7 +5,7 @@
 'use strict';
 
 /* ── Versione app (aggiornare qui a ogni release) ── */
-const APP_VERSION = '2.9.8';
+const APP_VERSION = '2.9.9';
 /* Indirizzo per segnalazioni bug/proposte (mostrato nel pannello ℹ️) */
 const FEEDBACK_EMAIL = 'info@alessandropezzali.it';
 
