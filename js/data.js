@@ -504,18 +504,42 @@ function buildBackup() {
   };
 }
 
-function downloadBackup() {
+/* Download del backup — su iPhone/iPad (PWA) il download via link è
+   inaffidabile: si usa il foglio di condivisione nativo (Salva su File,
+   AirDrop, email…) con fallback al download classico su desktop.
+   Ritorna false se l'utente annulla la condivisione.                  */
+async function bkDownload() {
   const bk = buildBackup();
-  const blob = new Blob([JSON.stringify(bk, null, 2)], { type: 'application/json' });
+  const json = JSON.stringify(bk, null, 2);
+  const ts = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+  const filename = `tirescanpro_backup_${ts}.json`;
+  const blob = new Blob([json], { type: 'application/json' });
+
+  if (typeof File !== 'undefined' && navigator.canShare) {
+    try {
+      const file = new File([blob], filename, { type: 'application/json' });
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'Backup TireScan-Pro' });
+        return true;
+      }
+    } catch (e) {
+      if (e && e.name === 'AbortError') return false;   // utente ha annullato
+      // altri errori → si prova il download classico
+    }
+  }
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  const ts = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
-  a.href = url; a.download = `tirescanpro_backup_${ts}.json`;
+  a.href = url; a.download = filename;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1500);
-  return bk;
+  return true;
 }
-window.downloadBackup = () => { downloadBackup(); if (window.toast) toast('💾 Backup completo scaricato', 't-ok'); };
+window.downloadBackup = function () {
+  bkDownload().then(ok => {
+    if (ok && window.toast) toast('💾 Backup completo salvato', 't-ok');
+    else if (ok === false && window.toast) toast('Backup annullato', '');
+  });
+};
 
 function restoreBackup(obj) {
   if (!obj || obj.type !== 'tirescanpro-backup' || !obj.data) return false;
@@ -564,7 +588,12 @@ function finishReset() {
   if (window.showView) showView('dashboard');
   if (window.HS && HS.showWelcomeScreen) setTimeout(() => HS.showWelcomeScreen(), 400);
 }
-window.doResetWithBackup = function () { downloadBackup(); setTimeout(finishReset, 350); };
+window.doResetWithBackup = function () {
+  bkDownload().then(ok => {
+    if (ok === false) { if (window.toast) toast('Backup annullato: dati NON azzerati', ''); return; }
+    setTimeout(finishReset, 350);
+  });
+};
 window.doResetNoBackup  = function () {
   if (!confirm('Sicuro? Senza backup i dati NON saranno recuperabili.')) return;
   finishReset();

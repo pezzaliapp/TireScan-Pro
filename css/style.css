@@ -779,3 +779,40 @@ td { padding: 11px 14px; vertical-align: middle; }
   .tc-row { flex-wrap: wrap; }
   .tc-bar-wrap { flex-basis: 100%; }
 }
+
+
+/* ═══════════════ iOS SAFE AREA (PWA installata, notch/Dynamic Island) ═══════════════
+   La status bar è translucent: l'app deve riservare gli spazi con env(). */
+.app-header {
+  height: calc(var(--hh) + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: calc(18px + env(safe-area-inset-left, 0px));
+  padding-right: calc(18px + env(safe-area-inset-right, 0px));
+}
+.app-main {
+  padding-left: calc(18px + env(safe-area-inset-left, 0px));
+  padding-right: calc(18px + env(safe-area-inset-right, 0px));
+  padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+}
+#welcome-overlay {
+  padding-top: calc(24px + env(safe-area-inset-top, 0px)) !important;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+}
+.rc-modal-overlay {
+  padding-top: calc(18px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+}
+#tire-report-overlay {
+  padding-top: calc(18px + env(safe-area-inset-top, 0px));
+}
+#toast { bottom: calc(22px + env(safe-area-inset-bottom, 0px)); }
+@media (max-width: 700px) {
+  .app-header {
+    padding-left: calc(12px + env(safe-area-inset-left, 0px));
+    padding-right: calc(12px + env(safe-area-inset-right, 0px));
+  }
+  .app-main {
+    padding-left: calc(12px + env(safe-area-inset-left, 0px));
+    padding-right: calc(12px + env(safe-area-inset-right, 0px));
+  }
+}
