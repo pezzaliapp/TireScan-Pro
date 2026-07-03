@@ -132,6 +132,10 @@ function showWelcomeScreen() {
           👥 Importa clienti (Anagrafiche)
           <input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="welcomeImport(this, 'clienti')">
         </label>
+        <label class="btn btn-ghost" style="cursor:pointer;font-size:13px;padding:11px 20px" title="Riporta tutto com'era: scansioni, clienti, appuntamenti e contatti da un file di backup .json">
+          ♻️ Ripristina da backup (.json)
+          <input type="file" accept=".json,application/json" style="display:none" onchange="welcomeImport(this)">
+        </label>
         <button class="btn btn-ghost" style="font-size:14px;padding:12px 24px" onclick="if(window.loadDemoData)loadDemoData()">
           🎬 Prova con dati demo
         </button>
@@ -591,9 +595,33 @@ function finishReset() {
 window.doResetWithBackup = function () {
   bkDownload().then(ok => {
     if (ok === false) { if (window.toast) toast('Backup annullato: dati NON azzerati', ''); return; }
-    setTimeout(finishReset, 350);
+    // Passaggio esplicito: su iOS l'esito della condivisione non è affidabile,
+    // quindi l'azzeramento parte solo da una conferma dell'utente.
+    showResetConfirmStep();
+  }).catch(() => {
+    if (window.toast) toast('❌ Backup non riuscito: dati NON azzerati', 't-err');
   });
 };
+
+function showResetConfirmStep() {
+  const ov = document.getElementById('reset-overlay');
+  if (!ov) return;
+  const modal = ov.querySelector('.rc-modal');
+  if (!modal) return;
+  modal.innerHTML = `
+    <div class="rc-modal-head"><h3>💾 Backup completato?</h3></div>
+    <div style="font-size:13px;line-height:1.6;margin-bottom:16px">
+      Controlla di aver <strong>salvato il file di backup</strong>
+      (su iPhone: "Salva su File" dal foglio di condivisione).<br>
+      Solo dopo, conferma l'azzeramento.
+    </div>
+    <div class="rc-modal-actions">
+      <button class="btn btn-danger" onclick="finishResetConfirmed()">✓ Sì, azzera ora</button>
+      <button class="btn btn-ghost" onclick="this.closest('.rc-modal-overlay').remove()">No, annulla</button>
+    </div>`;
+}
+window.finishResetConfirmed = function () { finishReset(); };
+
 window.doResetNoBackup  = function () {
   if (!confirm('Sicuro? Senza backup i dati NON saranno recuperabili.')) return;
   finishReset();

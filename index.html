@@ -48,6 +48,10 @@
       <input id="import-file-clienti" type="file" accept=".xlsx,.xls,.csv,.json" style="display:none">
     </label>
     <button class="btn btn-ghost btn-sm" onclick="downloadBackup()" title="Scarica un backup completo (scansioni, clienti, appuntamenti, contatti) in un file .json ripristinabile">💾 Backup</button>
+    <label class="btn btn-ghost btn-sm" style="cursor:pointer" title="Ripristina tutti i dati da un file di backup .json">
+      ♻️ Ripristina
+      <input id="import-backup" type="file" accept=".json,application/json" style="display:none">
+    </label>
     <button class="btn btn-ghost btn-sm" onclick="resetAllData()" title="Azzera tutti i dati locali (con backup automatico)">🗑 Azzera</button>
     <button class="btn btn-primary btn-sm" onclick="openAdd()">＋ Nuova</button>
   </div>

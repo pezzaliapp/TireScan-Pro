@@ -5,7 +5,7 @@
 'use strict';
 
 /* ── Versione app (aggiornare qui a ogni release) ── */
-const APP_VERSION = '2.10.2';
+const APP_VERSION = '2.10.4';
 /* Indirizzo per segnalazioni bug/proposte (mostrato nel pannello ℹ️) */
 const FEEDBACK_EMAIL = 'info@alessandropezzali.it';
 
@@ -685,6 +685,10 @@ window.addEventListener('DOMContentLoaded', ()=>{
   $('filter-stato')?.addEventListener('change', renderList);
   $('import-file')?.addEventListener('change', handleImport);
   $('import-file-clienti')?.addEventListener('change', handleImportClienti);
+  $('import-backup')?.addEventListener('change', (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    doImport(f); e.target.value = '';
+  });
 
   // Cancello disclaimer: obbligatorio alla prima apertura, poi mai più.
   // Dopo l'accettazione, al primo avvio assoluto compare il benvenuto.
