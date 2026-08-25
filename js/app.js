@@ -657,10 +657,31 @@ function installPWA() {
 }
 window.installPWA=installPWA;
 
-/* ── SW ── */
+/* ── SW: AGGIORNAMENTO AUTOMATICO ──
+   Quando pubblichi una nuova versione (basta cambiare CACHE in sw.js):
+   1. sw.js viene sempre riscaricato fresco (updateViaCache: 'none');
+   2. il worker nuovo si attiva da solo (skipWaiting è già in sw.js);
+   3. 'controllerchange' ricarica la pagina UNA volta: l'utente si
+      ritrova la versione nuova senza fare nulla;
+   4. il controllo avviene a ogni apertura, ogni 30 minuti e ogni
+      volta che l'app torna in primo piano.
+   Stesso meccanismo già in produzione su IncheSenso Meteo. */
 if ('serviceWorker' in navigator) {
+  let ricaricando = false;
+  let controllerPresente = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+    if (!controllerPresente) { controllerPresente = true; return; } // prima installazione: niente reload
+    if (ricaricando) return;
+    ricaricando = true;
+    location.reload();
+  });
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js').catch(e=>console.warn('SW:',e));
+    navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then(reg=>{
+      setInterval(()=>reg.update().catch(()=>{}), 1800000);
+      document.addEventListener('visibilitychange', ()=>{
+        if (!document.hidden) reg.update().catch(()=>{});
+      });
+    }).catch(e=>console.warn('SW:',e));
   });
 }
 
