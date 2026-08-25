@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" id="vp">
+<title>Diagnostica display</title>
+<style>
+  /* Font enormi apposta: leggibili anche se il viewport fosse da desktop */
+  body { font-family: monospace; background:#0b1120; color:#e2e8f0;
+         font-size:34px; line-height:1.5; margin:0; padding:24px; }
+  h1 { font-size:40px; color:#38bdf8; margin:0 0 16px; }
+  .r { border-bottom:1px solid #334155; padding:10px 0; word-break:break-all; }
+  .k { color:#94a3b8; font-size:26px; }
+  .v { font-weight:bold; }
+  #esito { margin-top:20px; padding:16px; border-radius:12px;
+           background:#1e293b; font-size:38px; font-weight:bold; }
+  .ok { color:#22c55e; } .no { color:#ef4444; }
+</style>
+</head>
+<body>
+<h1>📐 Diagnostica display</h1>
+<div id="out">misuro…</div>
+<div id="esito">test viewport in corso… attendi 2 secondi</div>
+<script>
+function riga(k, v){ return '<div class="r"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>'; }
+function misura(){
+  var vv = window.visualViewport;
+  var out = '';
+  out += riga('Data/ora', new Date().toLocaleString('it-IT'));
+  out += riga('window.innerWidth × innerHeight', window.innerWidth+' × '+window.innerHeight);
+  out += riga('screen.width × height', screen.width+' × '+screen.height);
+  out += riga('devicePixelRatio', window.devicePixelRatio);
+  out += riga('visualViewport width / scale', vv ? (Math.round(vv.width)+' / '+vv.scale.toFixed(2)) : 'n.d.');
+  out += riga('maxTouchPoints', navigator.maxTouchPoints);
+  out += riga('userAgentData.mobile', (navigator.userAgentData ? navigator.userAgentData.mobile : 'n.d.'));
+  out += riga('display-mode standalone', window.matchMedia('(display-mode: standalone)').matches);
+  out += riga('userAgent', navigator.userAgent);
+  document.getElementById('out').innerHTML = out;
+}
+misura();
+window.addEventListener('resize', misura);
+
+/* TEST DAL VIVO: il meta viewport viene onorato?
+   Scrivo width=430 e dopo 1,5s leggo cosa è successo davvero. */
+var primaW = window.innerWidth;
+setTimeout(function(){
+  document.getElementById('vp').setAttribute('content','width=430, initial-scale=' + (screen.width/430).toFixed(2));
+  setTimeout(function(){
+    var dopoW = window.innerWidth;
+    var vv = window.visualViewport;
+    var onorato = dopoW <= 500;
+    document.getElementById('esito').innerHTML =
+      'TEST META VIEWPORT<br>' +
+      'prima: innerWidth = ' + primaW + '<br>' +
+      'dopo "width=430": innerWidth = ' + dopoW +
+      (vv ? ' · scala = ' + vv.scale.toFixed(2) : '') + '<br>' +
+      (onorato
+        ? '<span class="ok">✔ META ONORATO — il fix viewport può funzionare</span>'
+        : '<span class="no">✘ META IGNORATO — modalità sito desktop attiva nel browser</span>');
+    misura();
+  }, 1500);
+}, 500);
+</script>
+</body>
+</html>
