@@ -3,6 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <script>
+  /* ============================================================
+     FIX AUTOMATICO "VISTA RIMPICCIOLITA" (pieghevoli / sito desktop)
+     Su alcuni dispositivi (es. Samsung Z Fold con schermo esterno, o
+     browser in modalità "Sito desktop") il viewport dichiarato è largo
+     come un desktop (~980px) anche se lo schermo è un telefono: tutto
+     appare minuscolo. Qui lo rileviamo e riscaliamo l'interfaccia da
+     soli, senza chiedere nulla all'utente.
+     Criterio: schermo touch + proporzioni da telefono in verticale
+     (altezza/larghezza >= 1.7) + viewport >= 650px. Un tablet vero in
+     verticale ha proporzioni ~1.3-1.4 e NON viene toccato; un telefono
+     normale ha viewport ~390-430px e NON viene toccato. Un laptop non
+     è touch e NON viene toccato. 430px = larghezza di riferimento.
+     Stesso fix già in produzione su IncheSenso Meteo (v26).
+     ============================================================ */
+  (function () {
+    function fixScale() {
+      var w = window.innerWidth, h = window.innerHeight;
+      var daTelefono = navigator.maxTouchPoints > 0 && w > 0 && h / w >= 1.7;
+      document.documentElement.style.zoom =
+        (daTelefono && w >= 650) ? (w / 430).toFixed(3) : '';
+    }
+    fixScale();
+    window.addEventListener('resize', fixScale);
+    window.addEventListener('orientationchange', fixScale);
+  })();
+  </script>
   <meta name="description" content="TireScan-Pro – Agenda appuntamenti e richiami clienti per chi usa il profilometro Handy Scan">
   <meta name="theme-color" content="#00d4ff">
   <meta name="apple-mobile-web-app-capable" content="yes">
