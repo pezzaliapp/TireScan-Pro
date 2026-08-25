@@ -5,29 +5,74 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <script>
   /* ============================================================
-     FIX AUTOMATICO "VISTA RIMPICCIOLITA" (pieghevoli / sito desktop)
-     Su alcuni dispositivi (es. Samsung Z Fold con schermo esterno, o
-     browser in modalità "Sito desktop") il viewport dichiarato è largo
-     come un desktop (~980px) anche se lo schermo è un telefono: tutto
-     appare minuscolo. Qui lo rileviamo e riscaliamo l'interfaccia da
-     soli, senza chiedere nulla all'utente.
-     Criterio: schermo touch + proporzioni da telefono in verticale
-     (altezza/larghezza >= 1.7) + viewport >= 650px. Un tablet vero in
-     verticale ha proporzioni ~1.3-1.4 e NON viene toccato; un telefono
-     normale ha viewport ~390-430px e NON viene toccato. Un laptop non
-     è touch e NON viene toccato. 430px = larghezza di riferimento.
-     Stesso fix già in produzione su IncheSenso Meteo (v26).
+     FIX "VISTA RIMPICCIOLITA" v2 (pieghevoli / sito desktop)
+     Alcuni dispositivi (es. Samsung Z Fold, schermo esterno) danno
+     alla pagina un viewport da desktop (~980px): tutto minuscolo.
+     Strategia a due livelli:
+     PIANO A - riscrivo il meta viewport a width=430. Se il browser
+       lo onora, il rendering torna da telefono in modo NATIVO:
+       dvh, vw e contenitori centrati funzionano tutti da soli.
+     PIANO B - se il meta viene ignorato (modalità "sito desktop"),
+       applico zoom E correggo le unità dvh (che lo zoom non scala)
+       tramite la variabile --fix-zoom e le regole in fondo pagina.
+     Criterio: touch + proporzioni verticali da telefono (h/w>=1.7)
+     + viewport >= 650px. Telefoni normali (~390-430px), tablet in
+     verticale (~1.3) e laptop (no touch) NON vengono toccati.
      ============================================================ */
   (function () {
-    function fixScale() {
+    var vp = document.querySelector('meta[name="viewport"]');
+    var CONTENUTO_ORIGINALE = vp.getAttribute('content');
+    var LARGHEZZA_TELEFONO = 430;
+
+    function anomalo() {
       var w = window.innerWidth, h = window.innerHeight;
-      var daTelefono = navigator.maxTouchPoints > 0 && w > 0 && h / w >= 1.7;
-      document.documentElement.style.zoom =
-        (daTelefono && w >= 650) ? (w / 430).toFixed(3) : '';
+      return navigator.maxTouchPoints > 0 && w >= 650 && h / w >= 1.7;
     }
-    fixScale();
-    window.addEventListener('resize', fixScale);
-    window.addEventListener('orientationchange', fixScale);
+    function azzera() {
+      document.documentElement.style.zoom = '';
+      document.documentElement.style.removeProperty('--fix-zoom');
+      document.documentElement.classList.remove('fix-zoom');
+      vp.setAttribute('content', CONTENUTO_ORIGINALE);
+    }
+    function applica() {
+      ignoraFino = Date.now() + 1000;
+      azzera();
+      requestAnimationFrame(function () {
+        if (!anomalo()) return;
+        // PIANO A: viewport esplicito da telefono
+        vp.setAttribute('content', 'width=' + LARGHEZZA_TELEFONO + ', viewport-fit=cover');
+        requestAnimationFrame(function () {
+          if (window.innerWidth <= 500) return;   // onorato: finito, resa nativa
+          // PIANO B: meta ignorato -> zoom + correzione dvh
+          vp.setAttribute('content', CONTENUTO_ORIGINALE);
+          var z = (window.innerWidth / LARGHEZZA_TELEFONO).toFixed(3);
+          document.documentElement.style.zoom = z;
+          document.documentElement.style.setProperty('--fix-zoom', z);
+          document.documentElement.classList.add('fix-zoom');
+        });
+      });
+    }
+    var attesa = null;
+    var ignoraFino = 0;   // i miei stessi cambi generano 'resize': li ignoro per 1s
+    function pianifica() {
+      if (Date.now() < ignoraFino) return;
+      clearTimeout(attesa);
+      attesa = setTimeout(applica, 150);
+    }
+    ignoraFino = Date.now() + 1000;
+    applica();
+    // il Fold cambia schermo quando si apre/chiude: rivaluto
+    window.addEventListener('resize', pianifica);
+    window.addEventListener('orientationchange', pianifica);
+    // regole di correzione dvh per il Piano B: aggiunte in fondo a head
+    // così vincono sull'ordine di style.css
+    document.addEventListener('DOMContentLoaded', function () {
+      var s = document.createElement('style');
+      s.textContent =
+        'html.fix-zoom body{min-height:calc(100dvh / var(--fix-zoom,1));}' +
+        'html.fix-zoom #app{min-height:calc(100dvh / var(--fix-zoom,1));}';
+      document.head.appendChild(s);
+    });
   })();
   </script>
   <meta name="description" content="TireScan-Pro – Agenda appuntamenti e richiami clienti per chi usa il profilometro Handy Scan">
