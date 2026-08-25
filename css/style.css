@@ -70,7 +70,10 @@
    BASE RESET
 ══════════════════════════════════════════════ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+html {
+  scroll-behavior: smooth; -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
+}
 body {
   font-family: var(--font-b);
   background: var(--bg);
@@ -115,7 +118,14 @@ input, select, textarea { font-family: var(--font-b); }
 }
 .brand-name em { color: var(--cyan); font-style: normal; }
 .brand-sub { font-size: 10px; color: var(--muted); display: block; margin-top: 1px; }
-.header-actions { display: flex; gap: 7px; align-items: center; flex-shrink: 0; }
+.header-actions {
+  display: flex; gap: 7px; align-items: center;
+  flex: 0 1 auto; min-width: 0; padding: 6px 0;
+  overflow-x: auto; overflow-y: hidden;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.header-actions::-webkit-scrollbar { display: none; }
+.header-actions > * { flex-shrink: 0; }
 
 /* Theme toggle */
 .btn-theme {
@@ -385,6 +395,9 @@ td { padding: 11px 14px; vertical-align: middle; }
 ══════════════════════════════════════════════ */
 .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 640px) { .charts-grid { grid-template-columns: 1fr; } }
+/* Un <canvas> ha larghezza intrinseca 300px: senza min-width:0 la traccia 1fr non
+   può scendere sotto quella misura e le card grafico sbordano sugli schermi stretti. */
+.charts-grid > * { min-width: 0; }
 .chart-wrap      { position: relative; height: 220px; }
 .chart-wrap-tall { height: 260px; }
 
@@ -449,6 +462,7 @@ td { padding: 11px 14px; vertical-align: middle; }
 .rc-modal-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,.72);
   z-index: 900; display: flex; align-items: center; justify-content: center;
+  align-items: safe center;
   padding: 20px; overflow-y: auto;
 }
 .rc-modal {
@@ -480,6 +494,7 @@ td { padding: 11px 14px; vertical-align: middle; }
   background: var(--bg);
   z-index: 999;
   display: flex; align-items: center; justify-content: center;
+  align-items: safe center;
   padding: 24px; overflow-y: auto;
   transition: opacity .3s;
 }
@@ -558,7 +573,7 @@ td { padding: 11px 14px; vertical-align: middle; }
 /* ══════════════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════════════ */
-@media (max-width: 480px) {
+@media (max-width: 700px) {
   .app-header { padding: 0 12px; }
   .app-main   { padding: 12px; }
   th, td      { padding: 9px 10px; }
