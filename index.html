@@ -3,6 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <script>
+  /* ============================================================
+     FIX "VISTA RIMPICCIOLITA" — copia IDENTICA di IncheSenso Meteo
+     v26, verificato funzionante su Samsung Z Fold 8 Ultra chiuso.
+     Zoom semplice, nessuna riscrittura del viewport, nessun piano
+     alternativo: solo ciò che è già stato provato sul dispositivo.
+     Criterio: touch + proporzioni verticali da telefono (h/w >= 1.7)
+     + viewport >= 650px. Telefoni normali, tablet e laptop esclusi.
+     ============================================================ */
+  (function () {
+    function fixScale() {
+      var w = window.innerWidth, h = window.innerHeight;
+      var daTelefono = navigator.maxTouchPoints > 0 && w > 0 && h / w >= 1.7;
+      if (daTelefono && w >= 650) {
+        document.documentElement.style.zoom = (w / 430).toFixed(3);
+        document.documentElement.classList.add('fix-zoom');
+      } else {
+        document.documentElement.style.zoom = '';
+        document.documentElement.classList.remove('fix-zoom');
+      }
+    }
+    fixScale();
+    window.addEventListener('resize', fixScale);
+    window.addEventListener('orientationchange', fixScale);
+  })();
+  </script>
+  <style>
+    /* Unica differenza rispetto a IncheSenso: TireScan usa altezze
+       100dvh, che lo zoom non riscala. Attive solo a fix inserito. */
+    html.fix-zoom body  { min-height: auto; }
+    html.fix-zoom #app  { min-height: auto; }
+  </style>
   <meta name="description" content="TireScan-Pro – Agenda appuntamenti e richiami clienti per chi usa il profilometro Handy Scan">
   <meta name="theme-color" content="#00d4ff">
   <meta name="apple-mobile-web-app-capable" content="yes">

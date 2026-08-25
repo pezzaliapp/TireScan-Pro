@@ -1,5 +1,5 @@
 /* HandyScan PWA — Service Worker v1.6 */
-const CACHE = 'tirescanpro-v38';
+const CACHE = 'tirescanpro-v39';
 const ASSETS = [
   './',
   './index.html',
