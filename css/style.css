@@ -218,6 +218,10 @@ input, select, textarea { font-family: var(--font-b); }
 }
 @media (max-width: 720px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 380px) { .stats-grid { grid-template-columns: 1fr 1fr; } }
+/* Come per .charts-grid e .form-grid: la traccia 1fr non deve restare bloccata
+   sul min-content della card, altrimenti la griglia sborda e Chrome Android
+   allarga il viewport di layout (che porta fuori schermo gli overlay fixed). */
+.stats-grid > * { min-width: 0; }
 
 .stat-card {
   background: var(--bg3); border: 1px solid var(--bdr);
@@ -372,12 +376,15 @@ td { padding: 11px 14px; vertical-align: middle; }
 ══════════════════════════════════════════════ */
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 @media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
-.form-group { display: flex; flex-direction: column; gap: 5px; }
+/* Un <input> ha una larghezza intrinseca di default (~20 caratteri): senza
+   min-width:0 impedisce alla traccia 1fr e al form-group di restringersi. */
+.form-grid > * { min-width: 0; }
+.form-group { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 .form-label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .4px; text-transform: uppercase; }
 .form-input {
   background: var(--bg2); border: 1px solid var(--bdr); border-radius: 8px;
   padding: 9px 12px; color: var(--text); font-size: 14px; outline: none;
-  transition: border-color .15s, background .22s; width: 100%;
+  transition: border-color .15s, background .22s; width: 100%; min-width: 0;
 }
 .form-input:focus { border-color: var(--cyan); }
 .form-section {
@@ -470,7 +477,14 @@ td { padding: 11px 14px; vertical-align: middle; }
   border-radius: 14px; padding: 22px; width: 100%; max-width: 560px;
   box-shadow: 0 12px 48px rgba(0,0,0,.55);
   transition: background .22s;
+  /* Flex item: senza min-width:0 la larghezza minima e' il min-content del
+     contenuto e il riquadro puo' diventare piu' largo della viewport. */
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
+/* Le etichette dei pulsanti sono .btn { white-space: nowrap }: dentro un modale
+   farebbero da puntello rigido. Vanno a capo solo quando manca spazio. */
+.rc-modal .btn { white-space: normal; }
 .rc-modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .rc-modal-head h3 { font-size: 16px; font-weight: 700; }
 .rc-modal-subject {
@@ -498,7 +512,8 @@ td { padding: 11px 14px; vertical-align: middle; }
   padding: 24px; overflow-y: auto;
   transition: opacity .3s;
 }
-.welcome-box { max-width: 520px; width: 100%; text-align: center; }
+.welcome-box { max-width: 520px; width: 100%; text-align: center; min-width: 0; overflow-wrap: anywhere; }
+.welcome-cta .btn, .welcome-step .btn { white-space: normal; }
 .welcome-logo {
   width: 76px; height: 76px;
   background: linear-gradient(135deg, var(--cyan), var(--blue));
@@ -539,6 +554,7 @@ td { padding: 11px 14px; vertical-align: middle; }
   transition: background .22s;
 }
 #install-banner.visible { display: flex; }
+#install-banner > div { min-width: 0; overflow-wrap: anywhere; }
 @keyframes fadeSlide { from { opacity:0; transform:translateY(-6px); } to { opacity:1; } }
 
 /* ══════════════════════════════════════════════
@@ -552,7 +568,11 @@ td { padding: 11px 14px; vertical-align: middle; }
   font-size: 13px; font-weight: 600; color: var(--text);
   box-shadow: 0 4px 24px rgba(0,0,0,.45);
   z-index: 9999; transition: transform .3s cubic-bezier(.34,1.56,.64,1), background .22s;
-  pointer-events: none; white-space: nowrap;
+  pointer-events: none;
+  /* con left:50% lo shrink-to-fit vede come spazio disponibile solo la meta'
+     destra: width:max-content lo svincola, max-width lo tiene in viewport. */
+  width: max-content; max-width: calc(100% - 32px);
+  text-align: center; overflow-wrap: anywhere;
 }
 #toast.show  { transform: translateX(-50%) translateY(0); }
 #toast.t-ok  { border-color: var(--ok);   color: var(--ok);   }
@@ -698,6 +718,7 @@ td { padding: 11px 14px; vertical-align: middle; }
   border-radius: 10px; padding: 34px 40px;
   font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 13px;
   box-shadow: 0 12px 40px rgba(0,0,0,.4);
+  min-width: 0; overflow-wrap: anywhere;
 }
 .tr-sheet em { font-style: normal; color: #78909c; }
 .tr-head {
