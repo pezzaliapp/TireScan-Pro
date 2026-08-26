@@ -868,29 +868,40 @@ td { padding: 11px 14px; vertical-align: middle; }
 
 /* ══════════════════════════════════════════════
    ANDROID — popup del disclaimer iniziale
-   Solo sotto .platform-android (js/overlay-viewport.js). Su iOS e desktop
-   questa classe non esiste e nulla cambia.
+   Solo sotto .platform-android (js/overlay-viewport.js). Su iOS, Safari e
+   desktop questa classe non esiste e nulla cambia: le regole globali
+   .rc-modal-overlay e .rc-modal non sono toccate.
 
-   Struttura semplice e deterministica: overlay a blocco ancorato al visual
-   viewport, nessun centraggio verticale flex, modal nel normale flusso del
-   documento che parte sempre dall'alto. Un solo scroll verticale: quello
-   dell'overlay. Cosi' scrollTop 0 coincide sempre con l'inizio reale del
-   contenuto e la risalita riporta sempre al primo blocco.
+   Architettura dello scroll: l'OVERLAY NON SCORRE PIU'. Su Chrome Android
+   un overlay position:fixed che sia anche scroll container rende
+   irraggiungibile la parte alta durante l'uso. Qui l'overlay e' solo la
+   cornice fissa (overflow:hidden) e il riquadro e' l'UNICO scroll
+   container, ancorato ai quattro lati: durante tutto lo scorrimento cambia
+   soltanto .rc-modal.scrollTop, mai il suo bounding rect.
    Posizionato in fondo al foglio per vincere sul blocco safe-area.
 ══════════════════════════════════════════════ */
 .platform-android #app-info-overlay {
+  position: fixed;
+  inset: 0;
   display: block;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  padding-top:    calc(14px + env(safe-area-inset-top, 0px));
-  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-  padding-left:   calc(14px + env(safe-area-inset-left, 0px));
-  padding-right:  calc(14px + env(safe-area-inset-right, 0px));
+  overflow: hidden;      /* la cornice non scorre: scrollHeight == clientHeight */
+  padding: 0;
 }
 .platform-android #app-info-overlay .rc-modal {
-  /* niente margini auto verticali: nel flusso a blocco partirebbero da 0 ma
-     qui l'intento e' esplicito, il riquadro parte dall'alto ed e' centrato
-     orizzontalmente dai soli margini auto laterali. */
-  margin: 0 auto;
+  position: absolute;
+  top:    calc(14px + env(safe-area-inset-top, 0px));
+  left:   calc(14px + env(safe-area-inset-left, 0px));
+  right:  calc(14px + env(safe-area-inset-right, 0px));
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  width: auto;
+  height: auto;
+  /* !important perche' showAppInfo() applica max-width:660px inline sul
+     riquadro, e uno stile inline batte qualunque regola non important:
+     senza questo il riquadro non potrebbe estendersi fra left e right. */
+  max-width: none !important;
+  margin: 0;
+  overflow-x: hidden;
+  overflow-y: auto;                    /* unico scroll container */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }

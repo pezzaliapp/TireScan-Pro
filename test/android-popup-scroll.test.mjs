@@ -157,10 +157,16 @@ for (const [W, H] of VIEWPORTS) {
         expression: `JSON.stringify((${STATO})())` + (dopo ? '' : ''), returnByValue: true });
       return JSON.parse(out.result.value);
     };
+    // scorre il contenitore REALMENTE scrollabile: dalla nuova architettura
+    // Android e' .rc-modal, non piu' l'overlay.
     const scorri = async (dove) => {
       await cdp.send('Runtime.evaluate', {
         expression: `(()=>{const o=document.getElementById('app-info-overlay');
-          o.scrollTop = ${dove === 'fondo' ? 'o.scrollHeight' : '0'};})()`, returnByValue: true });
+          const cand=[o, ...o.querySelectorAll('*')].filter(el=>{
+            const cs=getComputedStyle(el);
+            return (cs.overflowY==='auto'||cs.overflowY==='scroll') && el.scrollHeight>el.clientHeight+1;});
+          const sc=cand[cand.length-1]||o;
+          sc.scrollTop = ${dove === 'fondo' ? 'sc.scrollHeight' : '0'};})()`, returnByValue: true });
       await sleep(200);
     };
 
