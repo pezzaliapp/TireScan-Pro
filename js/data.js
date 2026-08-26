@@ -69,16 +69,12 @@ function markWelcomed() {
   localStorage.setItem(WELCOME_KEY, '1');
 }
 
-function showWelcomeScreen() {
-  const overlay = document.createElement('div');
-  overlay.id = 'welcome-overlay';
-  overlay.style.cssText = `
-    position:fixed;inset:0;background:var(--bg);z-index:999;
-    display:flex;align-items:center;justify-content:center;
-    padding:24px;overflow-y:auto;
-  `;
-  overlay.innerHTML = `
-    <div class="welcome-box">
+/* Contenuto della welcome screen: identico blocco usato sia dall'overlay
+   classico (iPhone / Safari / Mac / desktop) sia dalla schermata Android
+   dedicata. Estratto senza modifiche, cosi' l'HTML dell'overlay resta
+   byte per byte quello di prima. */
+function welcomeBoxInnerHTML() {
+  return `
       <div class="welcome-logo">🔍</div>
       <div class="welcome-title">Tire<span style="color:var(--cyan)">Scan</span>-Pro</div>
       <div class="welcome-sub">Agenda e richiami per chi usa Handy Scan</div>
@@ -144,7 +140,40 @@ function showWelcomeScreen() {
         </button>
       </div>
       <div class="welcome-hint">Puoi importare i dati in qualsiasi momento da <strong>⬆ Importa</strong> nell'header</div>
-    </div>
+`;
+}
+
+/* Schermata di benvenuto Android ─────────────────────────────────────
+   Su Android l'overlay classico non viene creato: usa position:fixed con
+   centraggio verticale flex ed e' esso stesso lo scroll container, lo
+   stesso schema che rende irraggiungibile la parte alta del contenuto.
+   Qui il contenitore fisso scorre e basta, e il contenuto sta nel normale
+   flusso del documento, partendo dall'alto. Un solo scroll container:
+   #android-welcome-screen. Contenuto, classi e stili interni sono gli
+   stessi (welcomeBoxInnerHTML): testi, colori e grafica non cambiano. */
+function showAndroidWelcomeScreen() {
+  document.getElementById('android-welcome-screen')?.remove();
+  const s = document.createElement('div');
+  s.id = 'android-welcome-screen';
+  s.innerHTML = `<main class="android-welcome-content">${welcomeBoxInnerHTML()}</main>`;
+  document.body.appendChild(s);
+  if (window.lockPageScroll) window.lockPageScroll();
+}
+
+function showWelcomeScreen() {
+  if (document.documentElement.classList.contains('platform-android')) {
+    showAndroidWelcomeScreen();
+    return;
+  }
+  const overlay = document.createElement('div');
+  overlay.id = 'welcome-overlay';
+  overlay.style.cssText = `
+    position:fixed;inset:0;background:var(--bg);z-index:999;
+    display:flex;align-items:center;justify-content:center;
+    padding:24px;overflow-y:auto;
+  `;
+  overlay.innerHTML = `
+    <div class="welcome-box">${welcomeBoxInnerHTML()}    </div>
   `;
   document.body.appendChild(overlay);
 }
@@ -152,6 +181,12 @@ function showWelcomeScreen() {
 function closeWelcome() {
   markWelcomed();
   try { localStorage.setItem('handyscan_disclaimer_ok', '1'); } catch {}
+  const and = document.getElementById('android-welcome-screen');
+  if (and) {
+    and.style.opacity = '0';
+    setTimeout(() => and.remove(), 300);
+    if (window.unlockPageScroll) window.unlockPageScroll();
+  }
   const el = document.getElementById('welcome-overlay');
   if (el) {
     el.style.opacity = '0';

@@ -912,3 +912,34 @@ td { padding: 11px 14px; vertical-align: middle; }
   white-space: normal;              /* le etichette vanno a capo se serve */
   margin-left: 8px;
 }
+
+/* ══════════════════════════════════════════════
+   ANDROID — schermata di benvenuto
+   Componente dedicato (js/data.js: showAndroidWelcomeScreen). Su Android
+   #welcome-overlay non viene creato: quello e' position:fixed con
+   centraggio verticale flex ed e' esso stesso lo scroll container, lo
+   schema che rende irraggiungibile la parte alta. Qui il contenitore
+   fisso scorre e basta, il contenuto sta nel flusso normale e parte
+   dall'alto. Un solo scroll container: #android-welcome-screen.
+   Contenuto, classi interne, colori e grafica restano gli stessi.
+══════════════════════════════════════════════ */
+.platform-android #android-welcome-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  overflow-y: auto;                 /* unico scroll container */
+  overflow-x: hidden;
+  background: var(--bg);
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  transition: opacity .3s;
+}
+.platform-android .android-welcome-content {
+  width: calc(100% - 28px);
+  max-width: 520px;
+  margin: 14px auto;
+  box-sizing: border-box;
+  text-align: center;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

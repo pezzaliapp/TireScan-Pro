@@ -658,6 +658,52 @@ ${appInfoBodyHTML()}    </div>
 }
 window.showAppInfo = showAppInfo;
 
+/* Blocco dello scroll di pagina, solo per la schermata Android.
+   Con il disclaimer aperto il documento sottostante resta scrollabile
+   (scrollHeight > clientHeight): overscroll-behavior sul contenitore
+   impedisce il chaining ma non che html/body scorrano per conto loro.
+   Qui html e body vengono resi non scorrevoli e lo stato inline
+   precedente viene salvato per essere ripristinato tale e quale. */
+let androidScrollLock = null;
+function lockPageScroll() {
+  if (androidScrollLock) return;                 // gia' bloccato: non risalvare
+  const h = document.documentElement, b = document.body;
+  androidScrollLock = {
+    y: window.scrollY,
+    htmlOverflow: h.style.overflow,
+    bodyOverflow: b.style.overflow,
+    bodyPosition: b.style.position,
+    bodyTop: b.style.top,
+    bodyLeft: b.style.left,
+    bodyRight: b.style.right,
+    bodyWidth: b.style.width
+  };
+  h.style.overflow = 'hidden';
+  b.style.overflow = 'hidden';
+  b.style.position = 'fixed';
+  b.style.top = (-androidScrollLock.y) + 'px';
+  b.style.left = '0';
+  b.style.right = '0';
+  b.style.width = '100%';
+}
+function unlockPageScroll() {
+  if (!androidScrollLock) return;
+  const h = document.documentElement, b = document.body;
+  const rip = (el, prop, val) => { if (val) el.style[prop] = val; else el.style.removeProperty(prop.replace(/[A-Z]/g, c => '-' + c.toLowerCase())); };
+  rip(h, 'overflow', androidScrollLock.htmlOverflow);
+  rip(b, 'overflow', androidScrollLock.bodyOverflow);
+  rip(b, 'position', androidScrollLock.bodyPosition);
+  rip(b, 'top',      androidScrollLock.bodyTop);
+  rip(b, 'left',     androidScrollLock.bodyLeft);
+  rip(b, 'right',    androidScrollLock.bodyRight);
+  rip(b, 'width',    androidScrollLock.bodyWidth);
+  const y = androidScrollLock.y;
+  androidScrollLock = null;
+  window.scrollTo(0, y);
+}
+window.lockPageScroll = lockPageScroll;      // usate anche da js/data.js
+window.unlockPageScroll = unlockPageScroll;  // per la welcome Android
+
 /* ── Disclaimer Android ─────────────────────────────────────────────────
    Componente separato, usato SOLO su Android al posto di showAppInfo(true).
    Non ha nulla in comune con .rc-modal-overlay / .rc-modal: e' un semplice
@@ -680,10 +726,12 @@ function showAndroidDisclaimer(onAccept = null) {
     </div>
   </main>`;
   document.body.appendChild(s);
+  lockPageScroll();
   const btn = document.getElementById('android-disclaimer-accept');
   if (btn) btn.addEventListener('click', () => {
     try { localStorage.setItem('handyscan_disclaimer_ok', '1'); } catch {}
     s.remove();
+    unlockPageScroll();
     if (typeof onAccept === 'function') onAccept();
   });
 }
