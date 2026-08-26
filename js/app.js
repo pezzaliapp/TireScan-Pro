@@ -584,7 +584,12 @@ function showAppInfo(gate = false, onAccept = null) {
   m.innerHTML = `<div class="rc-modal" style="max-width:660px">
     <div class="rc-modal-head"><h3>${gate ? '⚠️ Prima di iniziare' : 'ℹ️ TireScan-Pro — Informazioni'}</h3>
       ${gate ? '' : '<button class="btn btn-ghost btn-sm" onclick="this.closest(\'.rc-modal-overlay\').remove()">✕</button>'}</div>
-    <div style="font-size:13px;line-height:1.65;display:flex;flex-direction:column;gap:12px;max-height:55vh;overflow-y:auto">
+    <!-- Niente max-height/overflow-y qui: creerebbe una SECONDA area di scroll
+         annidata dentro quella dell'overlay. Con due scroller indipendenti
+         nessuna singola posizione mostra insieme inizio e fine, e riportare
+         il contenuto all'inizio richiede di agire sull'altro scroller.
+         Lo scorrimento verticale e' gestito solo da .rc-modal-overlay. -->
+    <div style="font-size:13px;line-height:1.65;display:flex;flex-direction:column;gap:12px">
       <div><strong>Versione:</strong> ${APP_VERSION} · <strong>Licenza:</strong> MIT · App indipendente e gratuita</div>
 
       <div><strong>Da dove arrivano i dati.</strong> L'app si alimenta con i due file Excel che scarichi

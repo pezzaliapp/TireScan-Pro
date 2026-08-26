@@ -68,8 +68,15 @@ const MEASURE = `(() => {
   if (!md) return JSON.stringify({ err: '.rc-modal assente' });
   const h3 = ov.querySelector('h3');
   const r  = md.getBoundingClientRect();
-  const left  = r.left  - vv.offsetLeft;      // coordinate relative al
+  const left  = r.left  - vv.offsetLeft;      // contenimento: relativo al
   const right = r.right - vv.offsetLeft;      // VISUAL viewport
+  // La SIMMETRIA si misura sul content box dell'overlay: clientWidth esclude
+  // la scrollbar classica, che e' UI visibile e non spazio sprecato. Su
+  // Android/iOS le scrollbar sono overlay e i due riferimenti coincidono.
+  // (stessa convenzione di modal-vertical e modal-scroll-origin)
+  const orr = ov.getBoundingClientRect();
+  const cbLeft  = orr.left + ov.clientLeft;
+  const cbRight = cbLeft + ov.clientWidth;
   return JSON.stringify({
     titolo: (h3 && h3.textContent || '').trim(),
     vvWidth: +vv.width.toFixed(1),
@@ -79,8 +86,8 @@ const MEASURE = `(() => {
     overlayW: +ov.getBoundingClientRect().width.toFixed(1),
     left: +left.toFixed(1),
     right: +right.toFixed(1),
-    mSx: +left.toFixed(1),
-    mDx: +(vv.width - right).toFixed(1),
+    mSx: +(r.left - cbLeft).toFixed(1),
+    mDx: +(cbRight - r.right).toFixed(1),
     hScroll: document.documentElement.scrollWidth - document.documentElement.clientWidth,
     topCut: +(r.top - ov.getBoundingClientRect().top + ov.scrollTop).toFixed(1)
   });
