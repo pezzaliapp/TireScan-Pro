@@ -472,6 +472,11 @@ td { padding: 11px 14px; vertical-align: middle; }
   align-items: safe center;
   padding: 20px; overflow-y: auto;
 }
+/* Stato "ancorato al visual viewport" (js/overlay-viewport.js): la scrollbar
+   classica occuperebbe spazio solo a destra, rendendo i margini asimmetrici. */
+.vv-pinned { scrollbar-width: none; }
+.vv-pinned::-webkit-scrollbar { display: none; }
+
 .rc-modal {
   background: var(--bg2); border: 1px solid var(--bdr2);
   border-radius: 14px; padding: 22px; width: 100%; max-width: 560px;
