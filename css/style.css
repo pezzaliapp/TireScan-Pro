@@ -486,6 +486,13 @@ td { padding: 11px 14px; vertical-align: middle; }
      contenuto e il riquadro puo' diventare piu' largo della viewport. */
   min-width: 0;
   overflow-wrap: anywhere;
+  /* Centraggio verticale con margini auto invece che con align-items: quando
+     lo spazio libero e' negativo (riquadro piu' alto del viewport) i margini
+     auto si risolvono a 0 e il riquadro parte dal bordo superiore, cosi' la
+     cima resta raggiungibile con scrollTop 0. align-items:center la spingerebbe
+     sopra l'origine di scorrimento, e "safe center" non e' supportato ovunque. */
+  margin-top: auto;
+  margin-bottom: auto;
 }
 /* Le etichette dei pulsanti sono .btn { white-space: nowrap }: dentro un modale
    farebbero da puntello rigido. Vanno a capo solo quando manca spazio. */
