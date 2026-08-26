@@ -21,6 +21,21 @@
 (function () {
   'use strict';
 
+  /* ── Rilevamento Android ─────────────────────────────────────────────
+     Confina alla sola piattaforma Android il workaround del disclaimer:
+     su Chrome/Samsung Internet il centraggio verticale flex non si comporta
+     in modo deterministico col touch. La classe platform-android e' l'unico
+     aggancio delle regole dedicate: iOS, Safari e desktop non la ricevono
+     mai e restano identici.                                               */
+  function isAndroid() {
+    var uaData = navigator.userAgentData;
+    if (uaData && uaData.platform) return uaData.platform === 'Android';
+    return /Android/i.test(navigator.userAgent || '');
+  }
+  if (isAndroid()) {
+    document.documentElement.classList.add('platform-android');
+  }
+
   var vv = window.visualViewport;
   if (!vv) return;                 // fallback pulito: resta il CSS attuale
 

@@ -864,3 +864,33 @@ td { padding: 11px 14px; vertical-align: middle; }
     padding-right: calc(12px + env(safe-area-inset-right, 0px));
   }
 }
+
+
+/* ══════════════════════════════════════════════
+   ANDROID — popup del disclaimer iniziale
+   Solo sotto .platform-android (js/overlay-viewport.js). Su iOS e desktop
+   questa classe non esiste e nulla cambia.
+
+   Struttura semplice e deterministica: overlay a blocco ancorato al visual
+   viewport, nessun centraggio verticale flex, modal nel normale flusso del
+   documento che parte sempre dall'alto. Un solo scroll verticale: quello
+   dell'overlay. Cosi' scrollTop 0 coincide sempre con l'inizio reale del
+   contenuto e la risalita riporta sempre al primo blocco.
+   Posizionato in fondo al foglio per vincere sul blocco safe-area.
+══════════════════════════════════════════════ */
+.platform-android #app-info-overlay {
+  display: block;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-top:    calc(14px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  padding-left:   calc(14px + env(safe-area-inset-left, 0px));
+  padding-right:  calc(14px + env(safe-area-inset-right, 0px));
+}
+.platform-android #app-info-overlay .rc-modal {
+  /* niente margini auto verticali: nel flusso a blocco partirebbero da 0 ma
+     qui l'intento e' esplicito, il riquadro parte dall'alto ed e' centrato
+     orizzontalmente dai soli margini auto laterali. */
+  margin: 0 auto;
+}
