@@ -570,27 +570,12 @@ function toggleTheme() {
 }
 window.toggleTheme = toggleTheme;
 
-/* ── Info & Disclaimer ──
-   showAppInfo(gate):
-   - gate=false → consultazione dal pulsante ℹ️ (chiudibile)
-   - gate=true  → CANCELLO D'INGRESSO: si apre all'avvio, copre l'app e
-     richiede l'accettazione esplicita; senza "Accetto" non si accede.  */
-function showAppInfo(gate = false, onAccept = null) {
-  document.getElementById('app-info-overlay')?.remove();
-  const m = document.createElement('div');
-  m.className = 'rc-modal-overlay';
-  m.id = 'app-info-overlay';
-  if (gate) m.style.zIndex = '1001';
-  m.innerHTML = `<div class="rc-modal" style="max-width:660px">
-    <div class="rc-modal-head"><h3>${gate ? '⚠️ Prima di iniziare' : 'ℹ️ TireScan-Pro — Informazioni'}</h3>
-      ${gate ? '' : '<button class="btn btn-ghost btn-sm" onclick="this.closest(\'.rc-modal-overlay\').remove()">✕</button>'}</div>
-    <!-- Niente max-height/overflow-y qui: creerebbe una SECONDA area di scroll
-         annidata dentro quella dell'overlay. Con due scroller indipendenti
-         nessuna singola posizione mostra insieme inizio e fine, e riportare
-         il contenuto all'inizio richiede di agire sull'altro scroller.
-         Lo scorrimento verticale e' gestito solo da .rc-modal-overlay. -->
-    <div style="font-size:13px;line-height:1.65;display:flex;flex-direction:column;gap:12px">
-      <div><strong>Versione:</strong> ${APP_VERSION} · <strong>Licenza:</strong> MIT · App indipendente e gratuita</div>
+/* Corpo del disclaimer: identico blocco di testo usato sia dal popup
+   (iPhone / Safari / Mac / desktop) sia dalla schermata Android dedicata.
+   Estratto senza modifiche, cosi' l'HTML del popup resta byte per byte
+   quello di prima. */
+function appInfoBodyHTML() {
+  return `      <div><strong>Versione:</strong> ${APP_VERSION} · <strong>Licenza:</strong> MIT · App indipendente e gratuita</div>
 
       <div><strong>Da dove arrivano i dati.</strong> L'app si alimenta con i due file Excel che scarichi
         da <strong>HandyScan Manager sul portale TireApp</strong> (portal.cormachsrl.com):
@@ -630,7 +615,30 @@ function showAppInfo(gate = false, onAccept = null) {
         L'autore declina ogni responsabilità per danni derivanti dall'uso dell'app o da decisioni
         assunte sulla base dei dati visualizzati. "Handy Scan", "TireApp" e "Cormach" appartengono
         ai rispettivi proprietari.</div>
-    </div>
+`;
+}
+
+/* ── Info & Disclaimer ──
+   showAppInfo(gate):
+   - gate=false → consultazione dal pulsante ℹ️ (chiudibile)
+   - gate=true  → CANCELLO D'INGRESSO: si apre all'avvio, copre l'app e
+     richiede l'accettazione esplicita; senza "Accetto" non si accede.  */
+function showAppInfo(gate = false, onAccept = null) {
+  document.getElementById('app-info-overlay')?.remove();
+  const m = document.createElement('div');
+  m.className = 'rc-modal-overlay';
+  m.id = 'app-info-overlay';
+  if (gate) m.style.zIndex = '1001';
+  m.innerHTML = `<div class="rc-modal" style="max-width:660px">
+    <div class="rc-modal-head"><h3>${gate ? '⚠️ Prima di iniziare' : 'ℹ️ TireScan-Pro — Informazioni'}</h3>
+      ${gate ? '' : '<button class="btn btn-ghost btn-sm" onclick="this.closest(\'.rc-modal-overlay\').remove()">✕</button>'}</div>
+    <!-- Niente max-height/overflow-y qui: creerebbe una SECONDA area di scroll
+         annidata dentro quella dell'overlay. Con due scroller indipendenti
+         nessuna singola posizione mostra insieme inizio e fine, e riportare
+         il contenuto all'inizio richiede di agire sull'altro scroller.
+         Lo scorrimento verticale e' gestito solo da .rc-modal-overlay. -->
+    <div style="font-size:13px;line-height:1.65;display:flex;flex-direction:column;gap:12px">
+${appInfoBodyHTML()}    </div>
     <div class="rc-modal-actions" style="margin-top:14px">
       ${gate
         ? `<button class="btn btn-ghost" onclick="toast('Per usare TireScan-Pro è necessario accettare le condizioni','t-err')">Non accetto</button>
@@ -649,6 +657,37 @@ function showAppInfo(gate = false, onAccept = null) {
   }
 }
 window.showAppInfo = showAppInfo;
+
+/* ── Disclaimer Android ─────────────────────────────────────────────────
+   Componente separato, usato SOLO su Android al posto di showAppInfo(true).
+   Non ha nulla in comune con .rc-modal-overlay / .rc-modal: e' un semplice
+   contenitore fisso a schermo intero che scorre, con dentro un blocco nel
+   normale flusso del documento. Un solo scroll container:
+   #android-disclaimer-screen. Nessun overflow annidato, nessun max-height,
+   nessun position fixed/absolute interno, nessun transform, nessun
+   centraggio verticale flex, nessun uso di visualViewport.
+   Testi e pulsanti sono gli stessi del popup (appInfoBodyHTML).          */
+function showAndroidDisclaimer(onAccept = null) {
+  document.getElementById('android-disclaimer-screen')?.remove();
+  const s = document.createElement('div');
+  s.id = 'android-disclaimer-screen';
+  s.innerHTML = `<main class="android-disclaimer-content">
+    <h3 class="android-disclaimer-title">⚠️ Prima di iniziare</h3>
+    <div class="android-disclaimer-body">${appInfoBodyHTML()}</div>
+    <div class="android-disclaimer-actions">
+      <button class="btn btn-ghost" onclick="toast('Per usare TireScan-Pro è necessario accettare le condizioni','t-err')">Non accetto</button>
+      <button class="btn btn-primary" id="android-disclaimer-accept">✓ Accetto e continuo</button>
+    </div>
+  </main>`;
+  document.body.appendChild(s);
+  const btn = document.getElementById('android-disclaimer-accept');
+  if (btn) btn.addEventListener('click', () => {
+    try { localStorage.setItem('handyscan_disclaimer_ok', '1'); } catch {}
+    s.remove();
+    if (typeof onAccept === 'function') onAccept();
+  });
+}
+window.showAndroidDisclaimer = showAndroidDisclaimer;
 
 /* ── PWA Install ── */
 window.addEventListener('beforeinstallprompt', e=>{
@@ -720,7 +759,15 @@ window.addEventListener('DOMContentLoaded', ()=>{
   // Dopo l'accettazione, al primo avvio assoluto compare il benvenuto.
   const showWelcomeIfFirst = () => { if (HS.isFirstLaunch()) setTimeout(() => HS.showWelcomeScreen(), 200); };
   if (!localStorage.getItem('handyscan_disclaimer_ok')) {
-    setTimeout(() => showAppInfo(true, showWelcomeIfFirst), 300);
+    // Su Android il popup non viene proprio creato: si usa la schermata
+    // dedicata. Altrove (iPhone, Safari, Mac, desktop) resta showAppInfo.
+    setTimeout(() => {
+      if (document.documentElement.classList.contains('platform-android')) {
+        showAndroidDisclaimer(showWelcomeIfFirst);
+      } else {
+        showAppInfo(true, showWelcomeIfFirst);
+      }
+    }, 300);
   } else {
     showWelcomeIfFirst();
   }

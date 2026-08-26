@@ -867,41 +867,48 @@ td { padding: 11px 14px; vertical-align: middle; }
 
 
 /* ══════════════════════════════════════════════
-   ANDROID — popup del disclaimer iniziale
-   Solo sotto .platform-android (js/overlay-viewport.js). Su iOS, Safari e
-   desktop questa classe non esiste e nulla cambia: le regole globali
-   .rc-modal-overlay e .rc-modal non sono toccate.
-
-   Architettura dello scroll: l'OVERLAY NON SCORRE PIU'. Su Chrome Android
-   un overlay position:fixed che sia anche scroll container rende
-   irraggiungibile la parte alta durante l'uso. Qui l'overlay e' solo la
-   cornice fissa (overflow:hidden) e il riquadro e' l'UNICO scroll
-   container, ancorato ai quattro lati: durante tutto lo scorrimento cambia
-   soltanto .rc-modal.scrollTop, mai il suo bounding rect.
-   Posizionato in fondo al foglio per vincere sul blocco safe-area.
+   ANDROID — schermata del disclaimer iniziale
+   Componente dedicato (js/app.js: showAndroidDisclaimer). Su Android il
+   popup #app-info-overlay non viene creato per il cancello d'ingresso:
+   qui non c'e' nessun overlay flex, nessun scroll annidato, nessun uso di
+   visualViewport. Un solo scroll container: #android-disclaimer-screen.
+   Le regole valgono solo sotto .platform-android; iOS, Safari e desktop
+   non ricevono mai questa classe e non hanno mai questo elemento.
 ══════════════════════════════════════════════ */
-.platform-android #app-info-overlay {
+.platform-android #android-disclaimer-screen {
   position: fixed;
   inset: 0;
-  display: block;
-  overflow: hidden;      /* la cornice non scorre: scrollHeight == clientHeight */
-  padding: 0;
-}
-.platform-android #app-info-overlay .rc-modal {
-  position: absolute;
-  top:    calc(14px + env(safe-area-inset-top, 0px));
-  left:   calc(14px + env(safe-area-inset-left, 0px));
-  right:  calc(14px + env(safe-area-inset-right, 0px));
-  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-  width: auto;
-  height: auto;
-  /* !important perche' showAppInfo() applica max-width:660px inline sul
-     riquadro, e uno stile inline batte qualunque regola non important:
-     senza questo il riquadro non potrebbe estendersi fra left e right. */
-  max-width: none !important;
-  margin: 0;
+  z-index: 1001;
+  overflow-y: auto;                 /* unico scroll container */
   overflow-x: hidden;
-  overflow-y: auto;                    /* unico scroll container */
+  background: rgba(0, 0, 0, .72);
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+}
+.platform-android .android-disclaimer-content {
+  width: calc(100% - 28px);
+  max-width: 660px;
+  margin: 14px auto;
+  box-sizing: border-box;
+  background: var(--bg2);
+  border: 1px solid var(--bdr2);
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, .55);
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.platform-android .android-disclaimer-title {
+  font-size: 16px; font-weight: 700; margin-bottom: 16px;
+}
+/* spaziatura fra i blocchi con i margini, non con un flex column */
+.platform-android .android-disclaimer-body { font-size: 13px; line-height: 1.65; }
+.platform-android .android-disclaimer-body > div + div { margin-top: 12px; }
+.platform-android .android-disclaimer-actions {
+  margin-top: 14px;
+  text-align: right;
+}
+.platform-android .android-disclaimer-actions .btn {
+  white-space: normal;              /* le etichette vanno a capo se serve */
+  margin-left: 8px;
 }
